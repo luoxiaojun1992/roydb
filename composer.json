@@ -4,7 +4,9 @@
     "type": "project",
     "keywords": [
         "database",
-        "php"
+        "php",
+        "dbms",
+        "newsql"
     ],
     "require": {
         "php": ">=7.4",
