@@ -75,8 +75,10 @@ message GetAllReply {
 
 message CountRequest {
   string startKey = 1;
-  string endKey = 2;
-  string keyPrefix = 3;
+  string startKeyType = 2;
+  string endKey = 3;
+  string endKeyType = 4;
+  string keyPrefix = 5;
 }
 
 message CountReply {

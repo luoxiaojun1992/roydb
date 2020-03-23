@@ -163,7 +163,9 @@ class Roykv extends KvStorage
     {
         $countReply = $btree->Count(
             (new CountRequest())->setStartKey('data.schema.' . $schema . '::')
+                ->setStartKeyType(gettype(''))
                 ->setEndKey('')
+                ->setEndKeyType(gettype(''))
                 ->setKeyPrefix('data.schema.' . $schema . '::')
         );
 

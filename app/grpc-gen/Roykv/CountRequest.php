@@ -18,11 +18,19 @@ class CountRequest extends \Google\Protobuf\Internal\Message
      */
     private $startKey = '';
     /**
-     * Generated from protobuf field <code>string endKey = 2;</code>
+     * Generated from protobuf field <code>string startKeyType = 2;</code>
+     */
+    private $startKeyType = '';
+    /**
+     * Generated from protobuf field <code>string endKey = 3;</code>
      */
     private $endKey = '';
     /**
-     * Generated from protobuf field <code>string keyPrefix = 3;</code>
+     * Generated from protobuf field <code>string endKeyType = 4;</code>
+     */
+    private $endKeyType = '';
+    /**
+     * Generated from protobuf field <code>string keyPrefix = 5;</code>
      */
     private $keyPrefix = '';
 
@@ -33,7 +41,9 @@ class CountRequest extends \Google\Protobuf\Internal\Message
      *     Optional. Data for populating the Message object.
      *
      *     @type string $startKey
+     *     @type string $startKeyType
      *     @type string $endKey
+     *     @type string $endKeyType
      *     @type string $keyPrefix
      * }
      */
@@ -65,7 +75,29 @@ class CountRequest extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>string endKey = 2;</code>
+     * Generated from protobuf field <code>string startKeyType = 2;</code>
+     * @return string
+     */
+    public function getStartKeyType()
+    {
+        return $this->startKeyType;
+    }
+
+    /**
+     * Generated from protobuf field <code>string startKeyType = 2;</code>
+     * @param string $var
+     * @return $this
+     */
+    public function setStartKeyType($var)
+    {
+        GPBUtil::checkString($var, True);
+        $this->startKeyType = $var;
+
+        return $this;
+    }
+
+    /**
+     * Generated from protobuf field <code>string endKey = 3;</code>
      * @return string
      */
     public function getEndKey()
@@ -74,7 +106,7 @@ class CountRequest extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>string endKey = 2;</code>
+     * Generated from protobuf field <code>string endKey = 3;</code>
      * @param string $var
      * @return $this
      */
@@ -87,7 +119,29 @@ class CountRequest extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>string keyPrefix = 3;</code>
+     * Generated from protobuf field <code>string endKeyType = 4;</code>
+     * @return string
+     */
+    public function getEndKeyType()
+    {
+        return $this->endKeyType;
+    }
+
+    /**
+     * Generated from protobuf field <code>string endKeyType = 4;</code>
+     * @param string $var
+     * @return $this
+     */
+    public function setEndKeyType($var)
+    {
+        GPBUtil::checkString($var, True);
+        $this->endKeyType = $var;
+
+        return $this;
+    }
+
+    /**
+     * Generated from protobuf field <code>string keyPrefix = 5;</code>
      * @return string
      */
     public function getKeyPrefix()
@@ -96,7 +150,7 @@ class CountRequest extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * Generated from protobuf field <code>string keyPrefix = 3;</code>
+     * Generated from protobuf field <code>string keyPrefix = 5;</code>
      * @param string $var
      * @return $this
      */
