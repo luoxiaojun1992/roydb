@@ -3,17 +3,17 @@
 namespace App\components\plans;
 
 use App\components\Ast;
-use App\components\consts\StmtType;
+use App\components\consts\Stmt;
 use App\components\storage\AbstractStorage;
 use Illuminate\Support\Facades\Storage;
 
 class Plan
 {
     const STMT_TYPE_PLAN_MAPPING = [
-        StmtType::SELECT => QueryPlan::class,
-        StmtType::INSERT => InsertPlan::class,
-        StmtType::DELETE => DeletePlan::class,
-        StmtType::UPDATE => UpdatePlan::class,
+        Stmt::TYPE_SELECT => QueryPlan::class,
+        Stmt::TYPE_INSERT => InsertPlan::class,
+        Stmt::TYPE_DELETE => DeletePlan::class,
+        Stmt::TYPE_UPDATE => UpdatePlan::class,
     ];
 
     /** @var Ast */

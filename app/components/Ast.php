@@ -2,7 +2,7 @@
 
 namespace App\components;
 
-use App\components\consts\StmtType;
+use App\components\consts\Stmt;
 
 class Ast
 {
@@ -22,13 +22,13 @@ class Ast
     protected function parseStmtType()
     {
         if (array_key_exists('SELECT', $this->stmt)) {
-            $this->stmtType = StmtType::SELECT;
+            $this->stmtType = Stmt::TYPE_SELECT;
         } elseif (array_key_exists('INSERT', $this->stmt)) {
-            $this->stmtType = StmtType::INSERT;
+            $this->stmtType = Stmt::TYPE_INSERT;
         } elseif (array_key_exists('DELETE', $this->stmt)) {
-            $this->stmtType = StmtType::DELETE;
+            $this->stmtType = Stmt::TYPE_DELETE;
         } elseif (array_key_exists('UPDATE', $this->stmt)) {
-            $this->stmtType = StmtType::UPDATE;
+            $this->stmtType = Stmt::TYPE_UPDATE;
         }
     }
 
