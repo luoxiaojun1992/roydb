@@ -21,6 +21,15 @@ class Histogram
 
     public function updateCount($schema, $index)
     {
-        //todo
+        $schemaMeta = $this->storage->getSchemaMetaData($schema);
+        if (!$schemaMeta) {
+            throw new \Exception('Schema ' . $schema . ' not exists');
+        }
+
+        //todo lock meta with schema
+
+        $updatedSchemaMeta = $schemaMeta;
+
+        $this->storage->setSchemaMetaData($schema, $schemaMeta);
     }
 }
