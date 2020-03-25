@@ -187,6 +187,13 @@ class QueryService extends BaseService
 //                                'name' => 'type',
 //                                'columns' => ['type'],
 //                                'unique' => false,
+//                                'histogram' => [
+//                                    [
+//                                        'lower' => '',
+//                                        'upper' => '',
+//                                        'count' => 0
+//                                    ]
+//                                ],
 //                            ],
 //                            [
 //                                'name' => 'name',

@@ -5,7 +5,6 @@ namespace App\components\plans;
 use App\components\Ast;
 use App\components\consts\Stmt;
 use App\components\storage\AbstractStorage;
-use Illuminate\Support\Facades\Storage;
 
 class Plan
 {
@@ -19,7 +18,7 @@ class Plan
     /** @var Ast */
     protected $ast;
 
-    /** @var Storage */
+    /** @var AbstractStorage */
     protected $storage;
 
     /** @var QueryPlan|InsertPlan */

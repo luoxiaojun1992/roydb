@@ -6,6 +6,7 @@ use App\components\elements\condition\Condition;
 use App\components\elements\condition\ConditionTree;
 use App\components\elements\condition\Operand;
 use App\components\math\OperatorHandler;
+use App\components\metric\Histogram;
 use Co\Channel;
 use SwFwLess\components\swoole\Scheduler;
 
@@ -1939,7 +1940,8 @@ abstract class KvStorage extends AbstractStorage
         $pk = $schemaMeta['pk'];
 
         foreach ($schemaMeta['index'] as $indexConfig) {
-            $indexBtree = $this->openBtree($schema . '.' . $indexConfig['name']);
+            $indexName = $indexConfig['name'];
+            $indexBtree = $this->openBtree($schema . '.' . $indexName);
             $indexPk = $indexConfig['columns'][0];
 
             if (!isset($row[$indexPk])) {
@@ -1965,7 +1967,7 @@ abstract class KvStorage extends AbstractStorage
                     array_push($indexRows, [$pk => $row[$pk]]);
                     if (!$this->dataSchemaSet(
                         $indexBtree,
-                        $schema . '.' . $indexConfig['name'],
+                        $schema . '.' . $indexName,
                         $row[$indexPk],
                         json_encode($indexRows)
                     )) {
@@ -1982,6 +1984,8 @@ abstract class KvStorage extends AbstractStorage
                     return false;
                 }
             }
+
+            Histogram::create($this)->updateCount($schema, $indexName);
         }
 
         return true;
@@ -2120,7 +2124,8 @@ abstract class KvStorage extends AbstractStorage
     protected function delIndex($schemaMeta, $schema, $row)
     {
         foreach ($schemaMeta['index'] as $indexConfig) {
-            $indexBtree = $this->openBtree($schema . '.' . $indexConfig['name']);
+            $indexName = $indexConfig['name'];
+            $indexBtree = $this->openBtree($schema . '.' . $indexName);
             $indexPk = $indexConfig['columns'][0];
 
             if (!isset($row[$indexPk])) {
@@ -2131,7 +2136,7 @@ abstract class KvStorage extends AbstractStorage
             $indexData = $this->dataSchemaGetById(
                 $indexBtree,
                 $row[$indexPk],
-                $schema . '.' . $indexConfig['name']
+                $schema . '.' . $indexName
             );
             if (!is_null($indexData)) {
                 $indexRows = json_decode($indexData, true);
@@ -2145,7 +2150,7 @@ abstract class KvStorage extends AbstractStorage
                 if ($deleted) {
                     if (!$this->dataSchemaSet(
                         $indexBtree,
-                        $schema . '.' . $indexConfig['name'],
+                        $schema . '.' . $indexName,
                         $row[$indexPk],
                         json_encode($indexRows)
                     )) {
@@ -2157,6 +2162,8 @@ abstract class KvStorage extends AbstractStorage
             } else {
                 return false;
             }
+
+            Histogram::create($this)->updateCount($schema, $indexName);
         }
 
         return true;
