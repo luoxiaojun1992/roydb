@@ -6,6 +6,7 @@ use App\components\elements\condition\Condition;
 use App\components\elements\condition\ConditionTree;
 use App\components\elements\condition\Operand;
 use App\components\math\OperatorHandler;
+use App\components\metric\Cardinality;
 use App\components\metric\Histogram;
 use Co\Channel;
 use SwFwLess\components\swoole\Scheduler;
@@ -1990,6 +1991,7 @@ abstract class KvStorage extends AbstractStorage
                 }
             }
 
+            Cardinality::create($this)->updateValue($schema, $indexName);
             Histogram::create($this)->updateCount($schema, $indexName);
         }
 
@@ -2168,6 +2170,7 @@ abstract class KvStorage extends AbstractStorage
                 return false;
             }
 
+            Cardinality::create($this)->updateValue($schema, $indexName);
             Histogram::create($this)->updateCount($schema, $indexName);
         }
 

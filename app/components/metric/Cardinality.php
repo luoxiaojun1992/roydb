@@ -4,7 +4,7 @@ namespace App\components\metric;
 
 use App\components\storage\AbstractStorage;
 
-class Histogram
+class Cardinality
 {
     /** @var AbstractStorage */
     protected $storage;
@@ -19,7 +19,7 @@ class Histogram
         $this->storage = $storage;
     }
 
-    public function updateCount($schema, $index)
+    public function updateValue($schema, $index)
     {
         return;
 
