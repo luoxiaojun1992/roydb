@@ -1710,7 +1710,7 @@ abstract class KvStorage extends AbstractStorage
                 }
             }
 
-            //todo select condition by partition and index cost
+            //todo select condition by partition and index cost(cardinality)
             $minCost = count($costList) > 0 ? min($costList) : 0;
             if ($minCost > 0) {
                 $minCostConditionIndex = array_search($minCost, $costList);
