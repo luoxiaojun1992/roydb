@@ -1403,12 +1403,12 @@ class QueryPlan
             }
         }
         foreach ($resultSet as $i => $row) {
-            foreach ($aliasColumns as $aliasColumn) {
-                $originColumnName = $aliasColumn->getValue();
-                if ($originColumnName !== ($aliasColumn->getAlias()['name'])) {
-                    unset($row[$originColumnName]);
-                }
-            }
+//            foreach ($aliasColumns as $aliasColumn) {
+//                $originColumnName = $aliasColumn->getValue();
+//                if ($originColumnName !== ($aliasColumn->getAlias()['name'])) {
+//                    unset($row[$originColumnName]);
+//                }
+//            }
             if (!in_array('*', $columnNames)) {
                 foreach ($row as $k => $v) {
                     if (!in_array($k, $columnNames)) {

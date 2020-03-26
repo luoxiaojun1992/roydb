@@ -21,21 +21,32 @@ class Cardinality
 
     public function updateValue($schema, $index)
     {
-        return;
-
         //todo using queue
+        //todo rate limit
+        return;
+    }
+
+    public function updateValueImmediately($schema, $index)
+    {
         //todo rate limit
 
         $schemaMeta = $this->storage->getSchemaMetaData($schema);
         if (!$schemaMeta) {
+            //todo log outer
             throw new \Exception('Schema ' . $schema . ' not exists');
         }
 
         //todo lock meta with schema
 
-        $indexCardinality = $this->storage->estimateIndexCardinality($schema);
+        $indexConfig = $schemaMeta['index'];
 
-        $updatedSchemaMeta = $schemaMeta;
+        foreach ($indexConfig as $i => $indexMeta) {
+            if ($indexMeta['name'] === $index) {
+                $indexConfig[$i]['cardinality'] = $this->storage->estimateIndexCardinality($schema, $index);
+            }
+        }
+
+        $schemaMeta['index'] = $indexConfig;
 
         $this->storage->setSchemaMetaData($schema, $schemaMeta);
     }

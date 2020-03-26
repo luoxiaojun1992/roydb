@@ -182,23 +182,19 @@ class QueryService extends BaseService
 //                                'allow_null' => false,
 //                            ],
 //                        ],
+//                        //not using assoc array because of the confusion about digital key and numeric key
 //                        'index' => [
 //                            [
 //                                'name' => 'type',
 //                                'columns' => ['type'],
 //                                'unique' => false,
-//                                'histogram' => [
-//                                    [
-//                                        'lower' => '',
-//                                        'upper' => '',
-//                                        'count' => 0
-//                                    ]
-//                                ],
+//                                'cardinality' => 0,
 //                            ],
 //                            [
 //                                'name' => 'name',
 //                                'columns' => ['name'],
 //                                'unique' => false,
+//                                'cardinality' => 0,
 //                            ],
 //                        ],
 //                        'partition' => [
