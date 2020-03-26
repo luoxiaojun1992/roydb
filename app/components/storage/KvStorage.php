@@ -1941,6 +1941,13 @@ abstract class KvStorage extends AbstractStorage
         return $affectedRows;
     }
 
+    /**
+     * @param $schemaMeta
+     * @param $schema
+     * @param $row
+     * @return bool
+     * @throws \Exception
+     */
     protected function setIndex($schemaMeta, $schema, $row)
     {
         $pk = $schemaMeta['pk'];
