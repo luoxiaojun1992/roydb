@@ -2297,4 +2297,10 @@ abstract class KvStorage extends AbstractStorage
 
         return $affectedRows;
     }
+
+    public function indexCardinality($schema)
+    {
+        // TODO: Implement estimateIndexCardinality() method.
+        //todo scan & cardinality analyze
+    }
 }

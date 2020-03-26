@@ -33,6 +33,8 @@ class Cardinality
 
         //todo lock meta with schema
 
+        $indexCardinality = $this->storage->indexCardinality($schema);
+
         $updatedSchemaMeta = $schemaMeta;
 
         $this->storage->setSchemaMetaData($schema, $schemaMeta);
