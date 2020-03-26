@@ -18,5 +18,5 @@ abstract class AbstractStorage
 
     abstract public function update($schema, $pkList, $updateRow);
 
-    abstract public function indexCardinality($schema);
+    abstract public function estimateIndexCardinality($schema);
 }
