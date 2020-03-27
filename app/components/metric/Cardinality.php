@@ -62,9 +62,22 @@ class Cardinality
         }
     }
 
+    /**
+     * @throws \Throwable
+     */
     public function dequeue()
     {
         //todo
+
+        while (true) {
+            $newMetric = [];
+
+            if ((!isset($newMetric['schema'])) || (!isset($newMetric['index']))) {
+                continue;
+            }
+
+            $this->updateValue($newMetric['schema'], $newMetric['index']);
+        }
     }
 
     /**
