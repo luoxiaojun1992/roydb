@@ -10,7 +10,8 @@ class Cardinality
 {
     const INITIAL_INTERVAL = 3600;
     const INTERVAL_CACHE_KEY = 'metric:cardinality:interval';
-    const RATE_LIMIT_METRIC = 'metric:cardinality';
+    const RATE_LIMIT_METRIC = 'rate_limit:metric:cardinality';
+    const QUEUE_NAME = 'queue:metric:cardinality';
 
     /** @var AbstractStorage */
     protected $storage;
@@ -67,16 +68,24 @@ class Cardinality
      */
     public function dequeue()
     {
-        //todo
+        $redis = RedisPool::pick('pika');
 
         while (true) {
-            $newMetric = [];
+            try {
+                $newMetric = $redis->rPop(self::QUEUE_NAME);
+                if (!$newMetric) {
+                    $newMetric = [];
+                }
 
-            if ((!isset($newMetric['schema'])) || (!isset($newMetric['index']))) {
-                continue;
+                if ((!isset($newMetric['schema'])) || (!isset($newMetric['index']))) {
+                    continue;
+                }
+
+                $this->updateValue($newMetric['schema'], $newMetric['index']);
+            } catch (\Throwable $e) {
+                RedisPool::release($redis);
+                throw $e;
             }
-
-            $this->updateValue($newMetric['schema'], $newMetric['index']);
         }
     }
 
@@ -96,9 +105,15 @@ class Cardinality
             return;
         }
 
-        //todo using queue
+        $redis = RedisPool::pick('pika');
 
-        return;
+        try {
+            $redis->lPush(self::QUEUE_NAME, json_encode(['schema' => $schema, 'index' => $index]));
+        } catch (\Throwable $e) {
+            throw $e;
+        } finally {
+            RedisPool::release($redis);
+        }
     }
 
     /**
