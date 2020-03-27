@@ -10,6 +10,7 @@ class Cardinality
 {
     const INITIAL_INTERVAL = 3600;
     const INTERVAL_CACHE_KEY = 'metric:cardinality:interval';
+    const RATE_LIMIT_METRIC = 'metric:cardinality';
 
     /** @var AbstractStorage */
     protected $storage;
@@ -22,13 +23,6 @@ class Cardinality
     public function __construct(AbstractStorage $storage)
     {
         $this->storage = $storage;
-    }
-
-    public function updateValue($schema, $index)
-    {
-        //todo using queue
-        //todo rate limit
-        return;
     }
 
     /**
@@ -68,6 +62,32 @@ class Cardinality
         }
     }
 
+    public function dequeue()
+    {
+        //todo
+    }
+
+    /**
+     * @param $schema
+     * @param $index
+     * @throws \Throwable
+     */
+    public function updateValue($schema, $index)
+    {
+        $period = $this->getSampleInterval();
+        if ($period <= 0) {
+            return;
+        }
+        $pass = RateLimit::pass(self::RATE_LIMIT_METRIC, $period, 1);
+        if (!$pass) {
+            return;
+        }
+
+        //todo using queue
+
+        return;
+    }
+
     /**
      * @param $schema
      * @param $index
@@ -79,18 +99,18 @@ class Cardinality
         if ($period <= 0) {
             return;
         }
-        $pass = RateLimit::pass('metric:cardinality', $period, 1);
+        $pass = RateLimit::pass(self::RATE_LIMIT_METRIC, $period, 1);
         if (!$pass) {
             return;
         }
+
+        //todo lock meta with schema
 
         $schemaMeta = $this->storage->getSchemaMetaData($schema);
         if (!$schemaMeta) {
             //todo log outer
             throw new \Exception('Schema ' . $schema . ' not exists');
         }
-
-        //todo lock meta with schema
 
         $indexConfig = $schemaMeta['index'];
 
