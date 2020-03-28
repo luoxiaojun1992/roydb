@@ -74,7 +74,8 @@ class Cardinality
             try {
                 $newMetric = $redis->rPop(self::QUEUE_NAME);
                 if (!$newMetric) {
-                    $newMetric = [];
+                    sleep(1);
+                    continue;
                 }
 
                 if ((!isset($newMetric['schema'])) || (!isset($newMetric['index']))) {

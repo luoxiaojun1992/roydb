@@ -70,17 +70,27 @@ return [
     //Scheduler
     'scheduler' => [
 //        [
+//            'name' => 'demo1',
 //            'schedule' => '* * * * *',
 //            'jobs' => function () {
 //                echo 'Every minute', PHP_EOL;
 //            },
 //        ],
 //        [
+//            'name' => 'demo2',
 //            'schedule' => '*/2 * * * *',
 //            'jobs' => function () {
 //                echo 'Every two minutes', PHP_EOL;
 //            },
 //        ],
+        [
+            'name' => 'index_cardinality',
+            'schedule' => '* * * * *',
+            'replica' => 1,
+            'jobs' => function () {
+                \App\components\metric\Cardinality::create(new \App\components\storage\tikv\TiKV())->dequeue();
+            },
+        ],
     ],
 
     //You can turn off the switch to improve the performance
