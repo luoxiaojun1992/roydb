@@ -403,6 +403,16 @@ abstract class KvStorage extends AbstractStorage
         return 0;
     }
 
+    protected function getIndexCardinality($schema, $index)
+    {
+        //todo
+    }
+
+    protected function getIndexCardinalityByCondition()
+    {
+       //todo
+    }
+
     /**
      * @param $indexName
      * @param $partitionIndex
