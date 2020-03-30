@@ -403,18 +403,33 @@ abstract class KvStorage extends AbstractStorage
         return 0;
     }
 
+    /**
+     * @param $schema
+     * @param $index
+     * @return int
+     * @throws \Throwable
+     */
     protected function getIndexCardinality($schema, $index)
     {
-        //todo
         $schemaMeta = $this->getSchemaMetaData($schema);
         if (!$schemaMeta) {
             throw new \Exception('Schema ' . $schema . ' not exists');
         }
 
+        if (!isset($schemaMeta['index'])) {
+            throw new \Exception('Index of schema ' . $schema . ' not exists');
+        }
 
+        foreach ($schemaMeta['index'] as $indexMeta) {
+            if ($indexMeta['name'] === $index) {
+                return $indexMeta['cardinality'] ?? 0;
+            }
+        }
+
+        throw new \Exception('Index ' . $index . ' not exists');
     }
 
-    protected function getIndexCardinalityByCondition()
+    protected function getIndexCardinalityByCondition($schema, $condition)
     {
        //todo
     }
