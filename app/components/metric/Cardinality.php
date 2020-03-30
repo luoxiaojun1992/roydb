@@ -137,16 +137,26 @@ class Cardinality
 
         $schemaMeta = $this->storage->getSchemaMetaData($schema);
         if (!$schemaMeta) {
-            //todo log outer
             throw new \Exception('Schema ' . $schema . ' not exists');
+        }
+
+        if (!isset($schemaMeta['index'])) {
+            throw new \Exception('Index of ' . $schema . ' not exists');
         }
 
         $indexConfig = $schemaMeta['index'];
 
+        $indexExisted = false;
         foreach ($indexConfig as $i => $indexMeta) {
             if ($indexMeta['name'] === $index) {
+                $indexExisted = true;
                 $indexConfig[$i]['cardinality'] = $this->storage->estimateIndexCardinality($schema, $index);
+                break;
             }
+        }
+
+        if (!$indexExisted) {
+            throw new \Exception('Index ' . $index . ' not exists');
         }
 
         $schemaMeta['index'] = $indexConfig;

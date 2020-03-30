@@ -406,6 +406,12 @@ abstract class KvStorage extends AbstractStorage
     protected function getIndexCardinality($schema, $index)
     {
         //todo
+        $schemaMeta = $this->getSchemaMetaData($schema);
+        if (!$schemaMeta) {
+            throw new \Exception('Schema ' . $schema . ' not exists');
+        }
+
+
     }
 
     protected function getIndexCardinalityByCondition()
@@ -1956,7 +1962,7 @@ abstract class KvStorage extends AbstractStorage
      * @param $schema
      * @param $row
      * @return bool
-     * @throws \Exception
+     * @throws \Throwable
      */
     protected function setIndex($schemaMeta, $schema, $row)
     {
