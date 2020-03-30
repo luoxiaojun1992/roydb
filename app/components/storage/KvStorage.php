@@ -515,7 +515,7 @@ abstract class KvStorage extends AbstractStorage
                         $field = $operandValue2;
                     }
 
-                    list($indexName, $usingPrimaryKey) = $this->selectIndex($schema, $field);
+                    list(, $usingPrimaryKey, $indexName) = $this->selectIndex($schema, $field);
                     if ($usingPrimaryKey) {
                         $cardinality = 1;
                     } else {
@@ -548,7 +548,7 @@ abstract class KvStorage extends AbstractStorage
                 }
 
                 if ($operandType1 === 'colref' && $operandType2 === 'const' && $operandType3 === 'const') {
-                    list($indexName, $usingPrimaryKey) = $this->selectIndex($schema, $operandType1);
+                    list(, $usingPrimaryKey, $indexName) = $this->selectIndex($schema, $operandType1);
                     if ($usingPrimaryKey) {
                         $cardinality = 1;
                     } else {
@@ -1877,13 +1877,38 @@ abstract class KvStorage extends AbstractStorage
                 }
             }
 
-            //todo select condition by partition and index cost(cardinality)
             $minCost = count($costList) > 0 ? min($costList) : 0;
             if ($minCost > 0) {
                 $minCostConditionIndex = array_search($minCost, $costList);
                 $subConditions = [$subConditions[$minCostConditionIndex]];
             } else {
-                $subConditions = array_slice($subConditions, 0, 1);
+                $cardinalityList = [];
+                foreach ($subConditions as $subCondition) {
+                    if ($subCondition instanceof Condition) {
+                        $cardinality = $this->getIndexCardinalityByCondition($schema, $subCondition, $isNot);
+                        $cardinalityList[] = $cardinality;
+                    } else {
+                        if ($isNot && ($subCondition->getLogicOperator() === 'not')) {
+                            $subCardinalityList = [];
+                            foreach ($subCondition as $subSubCondition) {
+                                $cardinality = $this->getIndexCardinalityByCondition($schema, $subSubCondition);
+                                $subCardinalityList[] = $cardinality;
+                            }
+                            if (count($subCardinalityList) > 0) {
+                                $cardinalityList[] = array_sum($subCardinalityList);
+                            } else {
+                                $cardinalityList[] = 0;
+                            }
+                        } else {
+                            $cardinality = $this->countPartitionByCondition($schema, $subCondition, $isNot);
+                            $cardinalityList[] = $cardinality;
+                        }
+                    }
+                }
+
+                $maxCardinality = count($cardinalityList) > 0 ? max($cardinalityList) : 0;
+                $maxCardinalityConditionIndex = array_search($maxCardinality, $cardinalityList);
+                $subConditions = [$subConditions[$maxCardinalityConditionIndex]];
             }
         }
 
@@ -2224,18 +2249,18 @@ abstract class KvStorage extends AbstractStorage
         $pk = $schemaMetaData['pk'];
 
         if ($pk === $column) {
-            return [$schema, true];
+            return [$schema, true, $pk];
         }
 
         $indexMeta = $schemaMetaData['index'] ?? [];
 
         foreach ($indexMeta as $indexMetaData) {
             if (($indexMetaData['columns'][0] ?? null) === $column) {
-                return [$schema . '.' . $indexMetaData['name'], false];
+                return [$schema . '.' . $indexMetaData['name'], false, $indexMetaData['name']];
             }
         }
 
-        return [$schema, true];
+        return [$schema, true, $pk];
     }
 
     /**
