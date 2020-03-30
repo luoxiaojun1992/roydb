@@ -429,9 +429,138 @@ abstract class KvStorage extends AbstractStorage
         throw new \Exception('Index ' . $index . ' not exists');
     }
 
-    protected function getIndexCardinalityByCondition($schema, $condition)
+    /**
+     * @param $schema
+     * @param $condition
+     * @param bool $isNot
+     * @return float|int|mixed
+     * @throws \Throwable
+     */
+    protected function getIndexCardinalityByCondition($schema, $condition, bool $isNot = false)
     {
-       //todo
+        if ($condition instanceof ConditionTree) {
+            $logicOperator = $condition->getLogicOperator();
+            $subConditions = $condition->getSubConditions();
+            $isNot = $isNot || ($logicOperator === 'not');
+
+            if ($logicOperator === 'and') {
+                $cardinalityList = [];
+                foreach ($subConditions as $subCondition) {
+                    $cardinality = $this->getIndexCardinalityByCondition($schema, $subCondition, $isNot);
+                    $cardinalityList[] = $cardinality;
+                }
+                return (count($cardinalityList) > 0) ? max($cardinalityList) : 0;
+            } elseif ($logicOperator === 'or') {
+                $cardinalityList = [];
+                foreach ($subConditions as $subCondition) {
+                    $cardinalityList[] = $this->getIndexCardinalityByCondition($schema, $subCondition, $isNot);
+                }
+                return array_sum($cardinalityList);
+            } elseif ($logicOperator === 'not') {
+                $cardinalityList = [];
+                foreach ($subConditions as $subCondition) {
+                    if ($subCondition instanceof Condition) {
+                        $cardinality = $this->getIndexCardinalityByCondition($schema, $subCondition, $isNot);
+                        $cardinalityList[] = $cardinality;
+                    } else {
+                        if ($isNot && ($subCondition->getLogicOperator() === 'not')) {
+                            $subCardinalityList = [];
+                            foreach ($subCondition as $subSubCondition) {
+                                $cardinality = $this->getIndexCardinalityByCondition($schema, $subSubCondition);
+                                $subCardinalityList[] = $cardinality;
+                            }
+                            if (count($subCardinalityList) > 0) {
+                                $cardinalityList[] = array_sum($subCardinalityList);
+                            }
+                        } else {
+                            $cardinality = $this->getIndexCardinalityByCondition($schema, $subCondition, $isNot);
+                            $cardinalityList[] = $cardinality;
+                        }
+                    }
+                }
+                return (count($cardinalityList) > 0) ? max($cardinalityList) : 0;
+            }
+
+            return 0;
+        }
+
+        if ($condition instanceof Condition) {
+            $cardinality = 0;
+
+            $conditionOperator = $condition->getOperator();
+            $operands = $condition->getOperands();
+
+            if (in_array($conditionOperator, ['<', '<=', '=', '>', '>='])) {
+                $operandValue1 = $operands[0]->getValue();
+                $operandType1 = $operands[0]->getType();
+                if ($operandType1 === 'colref') {
+                    if (strpos($operandValue1, '.')) {
+                        list(, $operandValue1) = explode('.', $operandValue1);
+                    }
+                }
+                $operandValue2 = $operands[1]->getValue();
+                $operandType2 = $operands[1]->getType();
+                if ($operandType2 === 'colref') {
+                    if (strpos($operandValue2, '.')) {
+                        list(, $operandValue2) = explode('.', $operandValue2);
+                    }
+                }
+
+                if ((($operandType1 === 'colref') && ($operandType2 === 'const')) ||
+                    (($operandType1 === 'const') && ($operandType2 === 'colref'))
+                ) {
+                    if ((($operandType1 === 'colref') && ($operandType2 === 'const'))) {
+                        $field = $operandValue1;
+                    } else {
+                        $field = $operandValue2;
+                    }
+
+                    list($indexName, $usingPrimaryKey) = $this->selectIndex($schema, $field);
+                    if ($usingPrimaryKey) {
+                        $cardinality = 1;
+                    } else {
+                        $cardinality = $this->getIndexCardinality($schema, $indexName);
+                    }
+                }
+            } elseif ($conditionOperator === 'between') {
+                $operandValue1 = $operands[0]->getValue();
+                $operandType1 = $operands[0]->getType();
+                if ($operandType1 === 'colref') {
+                    if (strpos($operandValue1, '.')) {
+                        list(, $operandValue1) = explode('.', $operandValue1);
+                    }
+                }
+
+                $operandValue2 = $operands[1]->getValue();
+                $operandType2 = $operands[1]->getType();
+                if ($operandType2 === 'colref') {
+                    if (strpos($operandValue2, '.')) {
+                        list(, $operandValue2) = explode('.', $operandValue2);
+                    }
+                }
+
+                $operandValue3 = $operands[2]->getValue();
+                $operandType3 = $operands[2]->getType();
+                if ($operandType3 === 'colref') {
+                    if (strpos($operandValue3, '.')) {
+                        list(, $operandValue3) = explode('.', $operandValue3);
+                    }
+                }
+
+                if ($operandType1 === 'colref' && $operandType2 === 'const' && $operandType3 === 'const') {
+                    list($indexName, $usingPrimaryKey) = $this->selectIndex($schema, $operandType1);
+                    if ($usingPrimaryKey) {
+                        $cardinality = 1;
+                    } else {
+                        $cardinality = $this->getIndexCardinality($schema, $indexName);
+                    }
+                }
+            }
+
+            return $cardinality;
+        }
+
+        return 0;
     }
 
     /**
@@ -2331,8 +2460,13 @@ abstract class KvStorage extends AbstractStorage
 
     public function estimateIndexCardinality($schema, $index)
     {
-        return 0;
+        return [
+            'cardinality' => 0,
+            'index_count' => 1000,
+            'tuple_count' => 1000,
+        ];
         // TODO: Implement estimateIndexCardinality() method.
         //todo scan & cardinality analyze
+        //todo cardinality = index count / tuple count
     }
 }

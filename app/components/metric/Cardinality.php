@@ -150,7 +150,10 @@ class Cardinality
         foreach ($indexConfig as $i => $indexMeta) {
             if ($indexMeta['name'] === $index) {
                 $indexExisted = true;
-                $indexConfig[$i]['cardinality'] = $this->storage->estimateIndexCardinality($schema, $index);
+                $cardinality = $this->storage->estimateIndexCardinality($schema, $index);
+                $indexConfig[$i]['cardinality'] = $cardinality['cardinality'];
+                $indexConfig[$i]['index_count'] = $cardinality['index_count'];
+                $indexConfig[$i]['tuple_count'] = $cardinality['tuple_count'];
                 break;
             }
         }
