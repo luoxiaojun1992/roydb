@@ -1917,8 +1917,12 @@ abstract class KvStorage extends AbstractStorage
                 }
 
                 $maxCardinality = count($cardinalityList) > 0 ? max($cardinalityList) : 0;
-                $maxCardinalityConditionIndex = array_search($maxCardinality, $cardinalityList);
-                $subConditions = [$subConditions[$maxCardinalityConditionIndex]];
+                if ($maxCardinality > 0) {
+                    $maxCardinalityConditionIndex = array_search($maxCardinality, $cardinalityList);
+                    $subConditions = [$subConditions[$maxCardinalityConditionIndex]];
+                } else {
+                    $subConditions = array_slice($subConditions, 0, 1);
+                }
             }
         }
 
