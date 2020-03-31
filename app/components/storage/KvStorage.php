@@ -1877,7 +1877,15 @@ abstract class KvStorage extends AbstractStorage
                 }
             }
 
-            $minCost = count($costList) > 0 ? min($costList) : 0;
+            $minCost = 0;
+            if (count($costList) > 0) {
+                foreach ($costList as $cost) {
+                    if ((($minCost <= 0) || ($cost < $minCost)) && ($cost > 0)) {
+                        $minCost = $cost;
+                    }
+                }
+            }
+
             if ($minCost > 0) {
                 $minCostConditionIndex = array_search($minCost, $costList);
                 $subConditions = [$subConditions[$minCostConditionIndex]];
