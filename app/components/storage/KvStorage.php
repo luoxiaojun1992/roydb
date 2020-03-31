@@ -1853,6 +1853,7 @@ abstract class KvStorage extends AbstractStorage
                 }
             }
 
+            //Select index by partition count or index cardinality
             $costList = [];
             foreach ($subConditions as $subCondition) {
                 if ($subCondition instanceof Condition) {
@@ -1877,13 +1878,14 @@ abstract class KvStorage extends AbstractStorage
                 }
             }
 
-            $minCost = 0;
             if (count($costList) > 0) {
-                foreach ($costList as $cost) {
-                    if ((($minCost <= 0) || ($cost < $minCost)) && ($cost > 0)) {
-                        $minCost = $cost;
-                    }
-                }
+                $nonZeroCostList = array_filter($costList, function ($cost) {
+                    return $cost > 0;
+                });
+
+                $minCost = count($nonZeroCostList) > 0 ? min($nonZeroCostList) : 0;
+            } else {
+                $minCost = 0;
             }
 
             if ($minCost > 0) {
