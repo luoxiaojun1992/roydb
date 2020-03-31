@@ -1763,6 +1763,10 @@ abstract class KvStorage extends AbstractStorage
 
         $subConditions = $conditionTree->getSubConditions();
 
+        if (count($subConditions) <= 0) {
+            throw new \Exception('Empty sub conditions with operator ' . $logicOperator);
+        }
+
         if ($logicOperator === 'and') {
             if (count($subConditions) === 2) {
                 //rewrite range conditions to between condition
