@@ -32,7 +32,7 @@ class Cardinality
      */
     protected function getSampleInterval()
     {
-        $redis = RedisPool::pick('pika');
+        $redis = RedisPool::pick();
         try {
             $interval = intval($redis->get(self::INTERVAL_CACHE_KEY));
             if ($interval <= 0) {
@@ -53,7 +53,7 @@ class Cardinality
      */
     protected function setSampleInterval($interval)
     {
-        $redis = RedisPool::pick('pika');
+        $redis = RedisPool::pick();
         try {
             $redis->set(self::INTERVAL_CACHE_KEY, $interval);
         } catch (\Throwable $e) {
@@ -68,7 +68,7 @@ class Cardinality
      */
     public function dequeue()
     {
-        $redis = RedisPool::pick('pika');
+        $redis = RedisPool::pick();
 
         while (true) {
             try {
@@ -82,7 +82,7 @@ class Cardinality
                     continue;
                 }
 
-                $this->updateValue($newMetric['schema'], $newMetric['index']);
+                $this->updateValueImmediately($newMetric['schema'], $newMetric['index']);
             } catch (\Throwable $e) {
                 RedisPool::release($redis);
                 throw $e;
@@ -106,7 +106,7 @@ class Cardinality
             return;
         }
 
-        $redis = RedisPool::pick('pika');
+        $redis = RedisPool::pick();
 
         try {
             $redis->lPush(self::QUEUE_NAME, json_encode(['schema' => $schema, 'index' => $index]));
