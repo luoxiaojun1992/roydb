@@ -2501,15 +2501,84 @@ abstract class KvStorage extends AbstractStorage
         return $affectedRows;
     }
 
+    /**
+     * @param $schema
+     * @param $index
+     * @return array
+     * @throws \Throwable
+     */
     public function estimateIndexCardinality($schema, $index)
     {
+        $schemaMeta = $this->getSchemaMetaData($schema);
+        if (!$schemaMeta) {
+            throw new \Exception('Schema '. $schema .' not exists');
+        }
+
+        if (!isset($schemaMeta['index'])) {
+            throw new \Exception('Index of ' . $schema . ' not exists');
+        }
+
+        $indexExisted = false;
+        foreach ($schemaMeta['index'] as $indexMeta) {
+            if ($indexMeta['name'] === $index) {
+                $indexExisted = true;
+            }
+        }
+        if (!$indexExisted) {
+            throw new \Exception('Index ' . $index . ' not exists');
+        }
+
+        $indexName = $schema . '.' . $index;
+
+        $btree = $this->openBtree($indexName);
+        if ($btree === false) {
+            return [];
+        }
+
+        $itLimit = 10000; //must greater than 1
+        if ($itLimit <= 1) {
+            throw new \Exception('Scan limit must greater than 1');
+        }
+
+        $indexCount = 0;
+        $tupleCount = 0;
+
+        $startKey = '';
+        $endKey = '';
+        $skipFirst = false;
+        $this->dataSchemaScan(
+            $btree,
+            $indexName,
+            $startKey,
+            $endKey,
+            $itLimit,
+            function ($subIndexData, $resultCount) use (
+                &$skipFirst, &$startKey, $itLimit, &$tupleCount, &$indexCount
+            ) {
+                array_walk($subIndexData, function (&$row, $key) use (&$startKey, &$tupleCount, &$indexCount) {
+                    $startKey = $key;
+                    $row = json_decode($row, true);
+                    ++$indexCount;
+                    $tupleCount += count($row);
+                });
+
+                if ($resultCount < $itLimit) {
+                    return false;
+                }
+
+                if (!$skipFirst) {
+                    $skipFirst = true;
+                }
+
+                return true;
+            },
+            $skipFirst
+        );
+
         return [
-            'cardinality' => 0,
-            'index_count' => 1000,
-            'tuple_count' => 1000,
+            'cardinality' => ($tupleCount > 0) ? ($indexCount / $tupleCount) : 0,
+            'index_count' => $indexCount,
+            'tuple_count' => $tupleCount,
         ];
-        // TODO: Implement estimateIndexCardinality() method.
-        //todo scan & cardinality analyze
-        //todo cardinality = index count / tuple count
     }
 }
