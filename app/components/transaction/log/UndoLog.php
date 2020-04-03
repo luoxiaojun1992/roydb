@@ -63,4 +63,16 @@ class UndoLog
         $this->op = $op;
         return $this;
     }
+
+    /**
+     * @return array
+     */
+    public function toArray()
+    {
+        return [
+            'key' => $this->getKey(),
+            'val' => $this->getVal(),
+            'op' => $this->getOp(),
+        ]
+    }
 }

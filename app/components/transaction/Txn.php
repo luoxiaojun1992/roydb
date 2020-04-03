@@ -117,8 +117,8 @@ class Txn
     {
         return json_encode([
             'status' => $this->getStatus(),
-            'redo_logs' => $this->getRedoLogs(),
-            'undo_logs' => $this->getUndoLogs(),
+            'redo_logs' => array_map(fn(RedoLog $val) => $val->toArray(), $this->getRedoLogs()),
+            'undo_logs' => array_map(fn(UndoLog $val) => $val->toArray(), $this->getUndoLogs()),
             'ts' => $this->getTs(),
         ]);
     }
