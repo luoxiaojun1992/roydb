@@ -109,4 +109,17 @@ class Txn
         $this->ts = $ts;
         return $this;
     }
+
+    /**
+     * @return false|string
+     */
+    public function __toString()
+    {
+        return json_encode([
+            'status' => $this->getStatus(),
+            'redo_logs' => $this->getRedoLogs(),
+            'undo_logs' => $this->getUndoLogs(),
+            'ts' => $this->getTs(),
+        ]);
+    }
 }
