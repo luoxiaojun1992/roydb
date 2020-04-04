@@ -88,7 +88,7 @@ return [
             'schedule' => '* * * * *',
             'replica' => 1,
             'jobs' => function () {
-                \App\components\metric\Cardinality::create(new \App\components\storage\tikv\TiKV())->dequeue();
+                \App\components\metric\Cardinality::dequeue();
             },
         ],
     ],

@@ -3,6 +3,7 @@
 namespace App\components\metric;
 
 use App\components\storage\AbstractStorage;
+use App\components\storage\tikv\TiKV;
 use SwFwLess\facades\RateLimit;
 use SwFwLess\facades\RedisPool;
 
@@ -66,7 +67,7 @@ class Cardinality
     /**
      * @throws \Throwable
      */
-    public function dequeue()
+    public static function dequeue()
     {
         $redis = RedisPool::pick();
 
@@ -82,7 +83,7 @@ class Cardinality
                     continue;
                 }
 
-                $this->updateValueImmediately($newMetric['schema'], $newMetric['index']);
+                self::create(new TiKV())->updateValueImmediately($newMetric['schema'], $newMetric['index']);
             } catch (\Throwable $e) {
                 RedisPool::release($redis);
                 throw $e;
