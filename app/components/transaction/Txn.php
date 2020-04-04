@@ -3,6 +3,7 @@
 namespace App\components\transaction;
 
 use App\components\consts\Txn as TxnConst;
+use App\components\storage\AbstractStorage;
 use App\components\transaction\log\RedoLog;
 use App\components\transaction\log\UndoLog;
 
@@ -23,6 +24,9 @@ class Txn
     protected array $txnSnapshot = [];
 
     protected array $txnSnapshotGaps = [];
+
+    /** @var AbstractStorage */
+    protected $storage;
 
     /**
      * @return int
@@ -181,6 +185,24 @@ class Txn
     }
 
     /**
+     * @return AbstractStorage
+     */
+    public function getStorage(): AbstractStorage
+    {
+        return $this->storage;
+    }
+
+    /**
+     * @param AbstractStorage $storage
+     * @return $this
+     */
+    public function setStorage(AbstractStorage $storage): self
+    {
+        $this->storage = $storage;
+        return $this;
+    }
+
+    /**
      * @return false|string
      */
     public function __toString()
@@ -194,5 +216,27 @@ class Txn
             'txn_snapshot' => $this->getTxnSnapshot(),
             'txn_snapshot_gaps' => $this->getTxnSnapshotGaps(),
         ]);
+    }
+
+    /**
+     * @param AbstractStorage $storage
+     * @return self
+     */
+    public static function create(AbstractStorage $storage): self
+    {
+        //todo fetch json from storage
+
+        $json = '';
+
+        $arr = json_decode($json, true);
+
+        return (new self())->setStatus($arr['status'])
+            ->setRedoLogs($arr['redo_logs'])
+            ->setUndoLogs($arr['undo_logs'])
+            ->setTs($arr['ts'])
+            ->setLockKeys($arr['lock_keys'])
+            ->setTxnSnapshot($arr['txn_snapshot'])
+            ->setTxnSnapshotGaps($arr['txn_snapshot_gaps'])
+            ->setStorage($storage);
     }
 }
