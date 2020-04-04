@@ -225,12 +225,13 @@ class Txn
     }
 
     /**
+     * @param $txnId
      * @param AbstractStorage $storage
-     * @return self
+     * @return static
      */
-    public static function create(AbstractStorage $storage): self
+    public static function fromTxnId($txnId, AbstractStorage $storage): self
     {
-        //todo fetch json from storage
+        //todo fetch json from storage by txn id
 
         $json = '';
 
@@ -244,5 +245,14 @@ class Txn
             ->setTxnSnapshot($arr['txn_snapshot'])
             ->setTxnSnapshotGaps($arr['txn_snapshot_gaps'])
             ->setStorage($storage);
+    }
+
+    /**
+     * @param AbstractStorage $storage
+     * @return static
+     */
+    public static function create(AbstractStorage $storage): self
+    {
+        return (new self())->setStorage($storage);
     }
 }
