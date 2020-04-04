@@ -18,6 +18,8 @@ class Txn
 
     protected int $ts;
 
+    protected array $lockKeys = [];
+
     /**
      * @return int
      */
@@ -111,6 +113,24 @@ class Txn
     }
 
     /**
+     * @return array
+     */
+    public function getLockKeys(): array
+    {
+        return $this->lockKeys;
+    }
+
+    /**
+     * @param array $lockKeys
+     * @return $this
+     */
+    public function setLockKeys(array $lockKeys): self
+    {
+        $this->lockKeys = $lockKeys;
+        return $this;
+    }
+
+    /**
      * @return false|string
      */
     public function __toString()
@@ -120,6 +140,7 @@ class Txn
             'redo_logs' => array_map(fn(RedoLog $val) => $val->toArray(), $this->getRedoLogs()),
             'undo_logs' => array_map(fn(UndoLog $val) => $val->toArray(), $this->getUndoLogs()),
             'ts' => $this->getTs(),
+            'lock_keys' => $this->getLockKeys(),
         ]);
     }
 }
