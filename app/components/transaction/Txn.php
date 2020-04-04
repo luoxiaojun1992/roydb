@@ -22,6 +22,8 @@ class Txn
 
     protected array $txnSnapshot = [];
 
+    protected array $txnSnapshotGaps = [];
+
     /**
      * @return int
      */
@@ -161,6 +163,24 @@ class Txn
     }
 
     /**
+     * @return array
+     */
+    public function getTxnSnapshotGaps(): array
+    {
+        return $this->txnSnapshotGaps;
+    }
+
+    /**
+     * @param array $txnSnapshotGaps
+     * @return $this
+     */
+    public function setTxnSnapshotGaps(array $txnSnapshotGaps): self
+    {
+        $this->txnSnapshotGaps = $txnSnapshotGaps;
+        return $this;
+    }
+
+    /**
      * @return false|string
      */
     public function __toString()
@@ -172,6 +192,7 @@ class Txn
             'ts' => $this->getTs(),
             'lock_keys' => $this->getLockKeys(),
             'txn_snapshot' => $this->getTxnSnapshot(),
+            'txn_snapshot_gaps' => $this->getTxnSnapshotGaps(),
         ]);
     }
 }
