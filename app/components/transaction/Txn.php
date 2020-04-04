@@ -131,6 +131,16 @@ class Txn
     }
 
     /**
+     * @param array $lockKeys
+     * @return $this
+     */
+    public function addLockKeys(array $lockKeys): self
+    {
+        $this->lockKeys = array_merge($this->lockKeys, $lockKeys);
+        return $this;
+    }
+
+    /**
      * @return false|string
      */
     public function __toString()
