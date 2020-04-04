@@ -20,6 +20,8 @@ class Txn
 
     protected array $lockKeys = [];
 
+    protected array $txnSnapshot = [];
+
     /**
      * @return int
      */
@@ -141,6 +143,24 @@ class Txn
     }
 
     /**
+     * @return array
+     */
+    public function getTxnSnapshot(): array
+    {
+        return $this->txnSnapshot;
+    }
+
+    /**
+     * @param array $txnSnapshot
+     * @return $this
+     */
+    public function setTxnSnapshot(array $txnSnapshot): self
+    {
+        $this->txnSnapshot = $txnSnapshot;
+        return $this;
+    }
+
+    /**
      * @return false|string
      */
     public function __toString()
@@ -151,6 +171,7 @@ class Txn
             'undo_logs' => array_map(fn(UndoLog $val) => $val->toArray(), $this->getUndoLogs()),
             'ts' => $this->getTs(),
             'lock_keys' => $this->getLockKeys(),
+            'txn_snapshot' => $this->getTxnSnapshot(),
         ]);
     }
 }
