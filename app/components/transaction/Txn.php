@@ -218,6 +218,14 @@ class Txn
         ]);
     }
 
+    public function save()
+    {
+        $json = (string)$this;
+
+        //todo implements saveTxn method of storage
+        $this->getStorage()->saveTxn($json);
+    }
+
     /**
      * @param AbstractStorage $storage
      * @return self
