@@ -21,9 +21,8 @@ class Txn
 
     protected array $lockKeys = [];
 
-    protected array $txnSnapshot = [];
-
-    protected array $txnSnapshotGaps = [];
+    /** @var Snapshot */
+    protected $txnSnapshot;
 
     /** @var AbstractStorage */
     protected $storage;
@@ -149,38 +148,20 @@ class Txn
     }
 
     /**
-     * @return array
+     * @return Snapshot
      */
-    public function getTxnSnapshot(): array
+    public function getTxnSnapshot(): Snapshot
     {
         return $this->txnSnapshot;
     }
 
     /**
-     * @param array $txnSnapshot
+     * @param Snapshot $txnSnapshot
      * @return $this
      */
-    public function setTxnSnapshot(array $txnSnapshot): self
+    public function setTxnSnapshot(Snapshot $txnSnapshot): self
     {
         $this->txnSnapshot = $txnSnapshot;
-        return $this;
-    }
-
-    /**
-     * @return array
-     */
-    public function getTxnSnapshotGaps(): array
-    {
-        return $this->txnSnapshotGaps;
-    }
-
-    /**
-     * @param array $txnSnapshotGaps
-     * @return $this
-     */
-    public function setTxnSnapshotGaps(array $txnSnapshotGaps): self
-    {
-        $this->txnSnapshotGaps = $txnSnapshotGaps;
         return $this;
     }
 
@@ -209,12 +190,11 @@ class Txn
     {
         return json_encode([
             'status' => $this->getStatus(),
-            'redo_logs' => array_map(fn(RedoLog $val) => $val->toArray(), $this->getRedoLogs()),
-            'undo_logs' => array_map(fn(UndoLog $val) => $val->toArray(), $this->getUndoLogs()),
+            'redo_logs' => array_map(fn(RedoLog $redoLog) => $redoLog->toArray(), $this->getRedoLogs()),
+            'undo_logs' => array_map(fn(UndoLog $undoLog) => $undoLog->toArray(), $this->getUndoLogs()),
             'ts' => $this->getTs(),
             'lock_keys' => $this->getLockKeys(),
-            'txn_snapshot' => $this->getTxnSnapshot(),
-            'txn_snapshot_gaps' => $this->getTxnSnapshotGaps(),
+            'txn_snapshot' => $this->getTxnSnapshot()->toArray(),
         ]);
     }
 
@@ -235,15 +215,24 @@ class Txn
 
         $json = '';
 
-        $arr = json_decode($json, true);
+        $txnArr = json_decode($json, true);
 
-        return (new self())->setStatus($arr['status'])
-            ->setRedoLogs($arr['redo_logs'])
-            ->setUndoLogs($arr['undo_logs'])
-            ->setTs($arr['ts'])
-            ->setLockKeys($arr['lock_keys'])
-            ->setTxnSnapshot($arr['txn_snapshot'])
-            ->setTxnSnapshotGaps($arr['txn_snapshot_gaps'])
+        return (new self())->setStatus($txnArr['status'])
+            ->setRedoLogs(
+                array_map(
+                    fn($redoLogArr) => (new RedoLog())->setKey($redoLogArr['key'])->setVal($redoLogArr['val'])->setOp($redoLogArr['op']),
+                    $txnArr['redo_logs']
+                )
+            )
+            ->setUndoLogs(
+                array_map(
+                    fn($undoLogArr) => (new UndoLog())->setKey($undoLogArr['key'])->setVal($undoLogArr['val'])->setOp($undoLogArr['op']),
+                    $txnArr['undo_logs']
+                )
+            )
+            ->setTs($txnArr['ts'])
+            ->setLockKeys($txnArr['lock_keys'])
+            ->setTxnSnapshot((new Snapshot())->setIdList($txnArr['txn_snapshot']['id_list'])->setIdListGaps($txnArr['txn_snapshot']['id_list_gaps']))
             ->setStorage($storage);
     }
 

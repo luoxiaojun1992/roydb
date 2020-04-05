@@ -4,5 +4,54 @@ namespace App\components\transaction;
 
 class Snapshot
 {
-    //todo
+    protected array $idList = [];
+
+    protected array $idListGaps = [];
+
+    /**
+     * @return array
+     */
+    public function getIdList(): array
+    {
+        return $this->idList;
+    }
+
+    /**
+     * @param array $idList
+     * @return $this
+     */
+    public function setIdList(array $idList): self
+    {
+        $this->idList = $idList;
+        return $this;
+    }
+
+    /**
+     * @return array
+     */
+    public function getIdListGaps(): array
+    {
+        return $this->idListGaps;
+    }
+
+    /**
+     * @param array $idListGaps
+     * @return $this
+     */
+    public function setIdListGaps(array $idListGaps): self
+    {
+        $this->idListGaps = $idListGaps;
+        return $this;
+    }
+
+    /**
+     * @return array
+     */
+    public function toArray()
+    {
+        return [
+            'id_list' => $this->getIdList(),
+            'id_list_gaps' => $this->getIdListGaps(),
+        ];
+    }
 }

@@ -73,6 +73,6 @@ class RedoLog
             'key' => $this->getKey(),
             'val' => $this->getVal(),
             'op' => $this->getOp(),
-        ]
+        ];
     }
 }
