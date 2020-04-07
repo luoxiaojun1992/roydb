@@ -21,14 +21,20 @@ class Ast
 
     protected function parseStmtType()
     {
-        if (array_key_exists('SELECT', $this->stmt)) {
-            $this->stmtType = Stmt::TYPE_SELECT;
-        } elseif (array_key_exists('INSERT', $this->stmt)) {
-            $this->stmtType = Stmt::TYPE_INSERT;
-        } elseif (array_key_exists('DELETE', $this->stmt)) {
-            $this->stmtType = Stmt::TYPE_DELETE;
-        } elseif (array_key_exists('UPDATE', $this->stmt)) {
-            $this->stmtType = Stmt::TYPE_UPDATE;
+        if ($this->stmt !== false) {
+            if (array_key_exists('SELECT', $this->stmt)) {
+                $this->stmtType = Stmt::TYPE_SELECT;
+            } elseif (array_key_exists('INSERT', $this->stmt)) {
+                $this->stmtType = Stmt::TYPE_INSERT;
+            } elseif (array_key_exists('DELETE', $this->stmt)) {
+                $this->stmtType = Stmt::TYPE_DELETE;
+            } elseif (array_key_exists('UPDATE', $this->stmt)) {
+                $this->stmtType = Stmt::TYPE_UPDATE;
+            }
+        } else {
+            if ($this->sql === 'BEGIN') {
+                $this->stmtType = Stmt::TYPE_BEGIN;
+            }
         }
     }
 

@@ -26,6 +26,7 @@ class QueryService extends \SwFwLess\services\GrpcUnaryService implements QueryI
     {
         $sql = $request->getSql();
         $ast = Parser::fromSql($sql)->parseAst();
+
         //todo 数据库权限检查
         $plan = Plan::create($ast, new TiKV());
         $plan = RulesBasedOptimizer::fromPlan($plan)->optimize();

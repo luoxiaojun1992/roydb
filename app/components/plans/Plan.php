@@ -13,6 +13,7 @@ class Plan
         Stmt::TYPE_INSERT => InsertPlan::class,
         Stmt::TYPE_DELETE => DeletePlan::class,
         Stmt::TYPE_UPDATE => UpdatePlan::class,
+        Stmt::TYPE_BEGIN => BeginPlan::class,
     ];
 
     /** @var Ast */

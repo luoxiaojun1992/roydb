@@ -8,4 +8,5 @@ class Stmt
     const TYPE_INSERT = 'insert';
     const TYPE_DELETE = 'delete';
     const TYPE_UPDATE = 'update';
+    const TYPE_BEGIN = 'begin';
 }
