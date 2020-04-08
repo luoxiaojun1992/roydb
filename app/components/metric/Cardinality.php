@@ -165,6 +165,6 @@ class Cardinality
 
         $schemaMeta['index'] = $indexConfig;
 
-        $this->storage->setSchemaMetaData($schema, $schemaMeta);
+        $this->storage->updateSchemaMetaData($schema, $schemaMeta);
     }
 }

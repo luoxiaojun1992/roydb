@@ -35,6 +35,6 @@ class Histogram
 
         $updatedSchemaMeta = $schemaMeta;
 
-        $this->storage->setSchemaMetaData($schema, $schemaMeta);
+        $this->storage->updateSchemaMetaData($schema, $schemaMeta);
     }
 }

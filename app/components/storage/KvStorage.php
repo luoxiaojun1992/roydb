@@ -72,9 +72,19 @@ abstract class KvStorage extends AbstractStorage
         return $result;
     }
 
-    public function setSchemaMetaData($schema, $metaData)
+    public function addSchemaMetaData($schema, $metaData)
     {
-        // TODO: Implement setSchemaMetaData() method.
+        // TODO: Implement
+    }
+
+    public function delSchemaMetaData($schema)
+    {
+        // TODO: Implement
+    }
+
+    public function updateSchemaMetaData($schema, $metaData)
+    {
+        // TODO: Implement
     }
 
     /**

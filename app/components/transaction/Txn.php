@@ -2,8 +2,10 @@
 
 namespace App\components\transaction;
 
+use App\components\consts\Log as LogConst;
 use App\components\consts\Txn as TxnConst;
 use App\components\storage\AbstractStorage;
+use App\components\transaction\log\AbstractLog;
 use App\components\transaction\log\RedoLog;
 use App\components\transaction\log\UndoLog;
 
@@ -17,7 +19,8 @@ class Txn
     /** @var UndoLog[] $undoLogs  */
     protected array $undoLogs = [];
 
-    protected int $ts;
+    /** @var int */
+    protected $ts;
 
     protected array $lockKeys = [];
 
@@ -204,8 +207,49 @@ class Txn
         return $this->getStorage()->saveTxn((string)$this);
     }
 
+    protected function executeRedoLogs()
+    {
+        $this->executeLogs($this->getRedoLogs());
+    }
+
+    protected function executeUndoLogs()
+    {
+        $this->executeLogs($this->getUndoLogs());
+    }
+
+    /**
+     * @param AbstractLog[] $logs
+     */
+    protected function executeLogs($logs)
+    {
+        foreach ($logs as $log) {
+            switch ($log->getOp()) {
+                case LogConst::OP_ADD_SCHEMA_DATA:
+                    $this->storage->add($log->getSchema(), $log->getRows());
+                    break;
+                case LogConst::OP_UPDATE_SCHEMA_DATA:
+                    $this->storage->update($log->getSchema(), $log->getRowPkList(), $log->getRows());
+                    break;
+                case LogConst::OP_DEL_SCHEMA_DATA:
+                    $this->storage->del($log->getSchema(), $log->getRowPkList());
+                    break;
+                case LogConst::OP_ADD_SCHEMA_META:
+                    $this->storage->addSchemaMetaData($log->getSchema(), $log->getMetaData());
+                    break;
+                case LogConst::OP_UPDATE_SCHEMA_META:
+                    $this->storage->updateSchemaMetaData($log->getSchema(), $log->getMetaData());
+                    break;
+                case LogConst::OP_DEL_SCHEMA_META:
+                    $this->storage->delSchemaMetaData($log->getSchema());
+                    break;
+            }
+        }
+    }
+
     public function rollback()
     {
+        $this->executeUndoLogs();
+
         //todo
     }
 
@@ -230,13 +274,21 @@ class Txn
         return (new self())->setStatus($txnArr['status'])
             ->setRedoLogs(
                 array_map(
-                    fn($redoLogArr) => (new RedoLog())->setKey($redoLogArr['key'])->setVal($redoLogArr['val'])->setOp($redoLogArr['op']),
+                    fn($redoLogArr) => (new RedoLog())->setSchema($redoLogArr['schema'])
+                        ->setRowPkList($redoLogArr['row_pk_list'])
+                        ->setRows($redoLogArr['rows'])
+                        ->setMetaData($redoLogArr['meta_data'])
+                        ->setOp($redoLogArr['op']),
                     $txnArr['redo_logs']
                 )
             )
             ->setUndoLogs(
                 array_map(
-                    fn($undoLogArr) => (new UndoLog())->setKey($undoLogArr['key'])->setVal($undoLogArr['val'])->setOp($undoLogArr['op']),
+                    fn($undoLogArr) => (new UndoLog())->setSchema($undoLogArr['schema'])
+                        ->setRowPkList($undoLogArr['row_pk_list'])
+                        ->setRows($undoLogArr['rows'])
+                        ->setMetaData($undoLogArr['meta_data'])
+                        ->setOp($undoLogArr['op']),
                     $txnArr['undo_logs']
                 )
             )

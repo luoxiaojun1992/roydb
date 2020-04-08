@@ -8,7 +8,11 @@ abstract class AbstractStorage
 
     abstract public function getSchemaMetaData($schema);
 
-    abstract public function setSchemaMetaData($schema, $metaData);
+    abstract public function addSchemaMetaData($schema, $metaData);
+
+    abstract public function delSchemaMetaData($schema);
+
+    abstract public function updateSchemaMetaData($schema, $metaData);
 
     abstract public function countAll($schema);
 
