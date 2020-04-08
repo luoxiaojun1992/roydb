@@ -32,6 +32,8 @@ class Snapshot
      */
     public function addIdList(array $idList): self
     {
+        //todo optimize, use bit
+
         $this->idList = array_merge($this->idList, $idList);
         return $this;
     }
