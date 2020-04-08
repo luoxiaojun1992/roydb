@@ -47,11 +47,11 @@ class DeletePlan
 
         $queryStmt = [];
 
-        $schemas = [];
+        $columns = [];
         foreach ($this->schemas as $schema) {
             $table = $schema['table'];
             $schemaMeta = $this->storage->getSchemaMetaData($table);
-            $schemas[] = [
+            $columns[] = [
                 'expr_type' => 'colref',
                 'alias' => false,
                 'base_expr' => $table . '.' . $schemaMeta['pk'],
@@ -59,7 +59,7 @@ class DeletePlan
                 'delim' => false,
             ];
         }
-        $queryStmt['SELECT'] = $schemas;
+        $queryStmt['SELECT'] = $columns;
         $queryStmt = array_merge($queryStmt, $stmt);
 
         $queryAst = new Ast((new PHPSQLCreator())->create($queryStmt), $queryStmt);

@@ -201,7 +201,17 @@ class Txn
     public function save()
     {
         //todo implements saveTxn method of storage
-        $this->getStorage()->saveTxn((string)$this);
+        return $this->getStorage()->saveTxn((string)$this);
+    }
+
+    public function rollback()
+    {
+        //todo
+    }
+
+    public function commit()
+    {
+        //todo
     }
 
     /**
