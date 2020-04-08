@@ -21,6 +21,9 @@ class AbstractLog
     /** @var string|null */
     protected $op;
 
+    /** @var int */
+    protected $ts;
+
     /**
      * @return string|null
      */
@@ -112,6 +115,24 @@ class AbstractLog
     }
 
     /**
+     * @return int
+     */
+    public function getTs(): int
+    {
+        return $this->ts;
+    }
+
+    /**
+     * @param int $ts
+     * @return $this
+     */
+    public function setTs(int $ts): self
+    {
+        $this->ts = $ts;
+        return $this;
+    }
+
+    /**
      * @return array
      */
     public function toArray()
@@ -122,6 +143,7 @@ class AbstractLog
             'rows' => $this->getRows(),
             'meta_data' => $this->getMetaData(),
             'op' => $this->getOp(),
+            'ts' => $this->getTs(),
         ];
     }
 }

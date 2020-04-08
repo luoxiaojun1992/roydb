@@ -334,7 +334,8 @@ class Txn
                         ->setRowPkList($redoLogArr['row_pk_list'])
                         ->setRows($redoLogArr['rows'])
                         ->setMetaData($redoLogArr['meta_data'])
-                        ->setOp($redoLogArr['op']),
+                        ->setOp($redoLogArr['op'])
+                        ->setTs($redoLogArr['ts']),
                     $txnArr['redo_logs']
                 )
             )
@@ -344,7 +345,8 @@ class Txn
                         ->setRowPkList($undoLogArr['row_pk_list'])
                         ->setRows($undoLogArr['rows'])
                         ->setMetaData($undoLogArr['meta_data'])
-                        ->setOp($undoLogArr['op']),
+                        ->setOp($undoLogArr['op'])
+                        ->setTs($undoLogArr['ts']),
                     $txnArr['undo_logs']
                 )
             )
