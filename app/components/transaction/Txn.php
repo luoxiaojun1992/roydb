@@ -22,6 +22,9 @@ class Txn
     /** @var int */
     protected $ts;
 
+    /** @var int */
+    protected $commitTs;
+
     protected array $lockKeys = [];
 
     /** @var Snapshot */
@@ -123,6 +126,24 @@ class Txn
     }
 
     /**
+     * @return int
+     */
+    public function getCommitTs(): int
+    {
+        return $this->commitTs;
+    }
+
+    /**
+     * @param int $commitTs
+     * @return $this
+     */
+    public function setCommitTs(int $commitTs): self
+    {
+        $this->commitTs = $commitTs;
+        return $this;
+    }
+
+    /**
      * @return array
      */
     public function getLockKeys(): array
@@ -203,8 +224,12 @@ class Txn
 
     public function save()
     {
-        //todo implements saveTxn method of storage
-        return $this->getStorage()->saveTxn((string)$this);
+        if ($this->status === TxnConst::STATUS_PENDING) {
+            $this->setStatus(TxnConst::STATUS_BEGIN);
+            return $this->getStorage()->addTxn($this->getTs(), (string)$this);
+        } else {
+            return $this->getStorage()->updateTxn($this->getTs(), (string)$this);
+        }
     }
 
     protected function executeRedoLogs()
@@ -249,27 +274,32 @@ class Txn
     public function rollback()
     {
         $this->executeUndoLogs();
-
-        //todo
+        $this->setStatus(TxnConst::STATUS_ROLLBACK);
+        $this->save();
+        $this->storage->delTxn($this->getTs());
     }
 
     public function commit()
     {
         //todo
+        $this->setStatus(TxnConst::STATUS_COMMITTED);
+        $this->save();
     }
 
     /**
      * @param $txnId
      * @param AbstractStorage $storage
      * @return static
+     * @throws \Exception
      */
     public static function fromTxnId($txnId, AbstractStorage $storage): self
     {
-        //todo fetch json from storage by txn id
+        $txnJson = $storage->getTxn($txnId);
+        if (is_null($txnJson)) {
+            throw new \Exception('Txn['. ((string)$txnId) .'] not exists');
+        }
 
-        $json = '';
-
-        $txnArr = json_decode($json, true);
+        $txnArr = json_decode($txnJson, true);
 
         return (new self())->setStatus($txnArr['status'])
             ->setRedoLogs(

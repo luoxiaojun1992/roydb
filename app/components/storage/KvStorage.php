@@ -87,6 +87,26 @@ abstract class KvStorage extends AbstractStorage
         // TODO: Implement
     }
 
+    public function getTxn($txnId)
+    {
+        // TODO: Implement getTxn() method.
+    }
+
+    public function addTxn($txnId, $txnJson)
+    {
+        // TODO: Implement addTxn() method.
+    }
+
+    public function delTxn($txnId)
+    {
+        // TODO: Implement delTxn() method.
+    }
+
+    public function updateTxn($txnId, $txnJson)
+    {
+        // TODO: Implement updateTxn() method.
+    }
+
     /**
      * @param $schema
      * @param $field

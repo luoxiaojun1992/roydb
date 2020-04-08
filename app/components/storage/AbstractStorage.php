@@ -23,4 +23,12 @@ abstract class AbstractStorage
     abstract public function update($schema, $pkList, $updateRow);
 
     abstract public function estimateIndexCardinality($schema, $index);
+
+    abstract public function getTxn($txnId);
+
+    abstract public function addTxn($txnId, $txnJson);
+
+    abstract public function delTxn($txnId)
+
+    abstract public function updateTxn($txnId, $txnJson);
 }
