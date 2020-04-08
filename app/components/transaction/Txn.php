@@ -222,14 +222,14 @@ class Txn
         ]);
     }
 
-    public function save()
+    public function add()
     {
-        if ($this->status === TxnConst::STATUS_PENDING) {
-            $this->setStatus(TxnConst::STATUS_BEGIN);
-            return $this->getStorage()->addTxn($this->getTs(), (string)$this);
-        } else {
-            return $this->getStorage()->updateTxn($this->getTs(), (string)$this);
-        }
+        return $this->getStorage()->addTxn($this->getTs(), (string)$this);
+    }
+
+    public function update()
+    {
+        return $this->getStorage()->updateTxn($this->getTs(), (string)$this);
     }
 
     protected function executeRedoLogs()
@@ -271,19 +271,45 @@ class Txn
         }
     }
 
+    /**
+     * @throws \Exception
+     */
+    public function begin()
+    {
+        if ($this->getStatus() !== TxnConst::STATUS_PENDING) {
+            throw new \Exception('Txn[' . ((string)$this->getTs()) . '] status is not pending');
+        }
+
+        $this->setStatus(TxnConst::STATUS_BEGIN);
+        return $this->add();
+    }
+
+    /**
+     * @throws \Exception
+     */
     public function rollback()
     {
+        if ($this->getStatus() !== TxnConst::STATUS_BEGIN) {
+            throw new \Exception('Txn[' . ((string)$this->getTs()) . '] has not been begun');
+        }
+
         $this->executeUndoLogs();
         $this->setStatus(TxnConst::STATUS_ROLLBACK);
-        $this->save();
+        $this->update();
         $this->storage->delTxn($this->getTs());
     }
 
+    /**
+     * @throws \Exception
+     */
     public function commit()
     {
-        //todo
+        if ($this->getStatus() !== TxnConst::STATUS_BEGIN) {
+            throw new \Exception('Txn[' . ((string)$this->getTs()) . '] has not been begun');
+        }
+
         $this->setStatus(TxnConst::STATUS_COMMITTED);
-        $this->save();
+        $this->update();
     }
 
     /**

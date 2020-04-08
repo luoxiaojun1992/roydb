@@ -34,6 +34,10 @@ class BeginPlan
         return 1;
     }
 
+    /**
+     * @return int
+     * @throws \Exception
+     */
     public function execute()
     {
         //todo
@@ -51,7 +55,7 @@ class BeginPlan
             ->setTs($txnTs)
             ->setTxnSnapshot($txnSnapShot);
 
-        if ($txn->save()) {
+        if ($txn->begin()) {
             if ($this->storage->saveTxnSnapShot($txnSnapShot)) {
                 return $txnTs;
             } else {
