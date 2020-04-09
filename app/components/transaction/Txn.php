@@ -308,6 +308,7 @@ class Txn
             throw new \Exception('Txn[' . ((string)$this->getTs()) . '] has not been begun');
         }
 
+        $this->setCommitTs();
         $this->setStatus(TxnConst::STATUS_COMMITTED);
         $this->update();
     }
