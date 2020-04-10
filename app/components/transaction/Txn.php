@@ -273,7 +273,8 @@ class Txn
     }
 
     /**
-     * @throws \Exception
+     * @return mixed
+     * @throws \Throwable
      */
     public function begin()
     {
@@ -281,8 +282,30 @@ class Txn
             throw new \Exception('Txn[' . ((string)$this->getTs()) . '] status is not pending');
         }
 
+        $txnTs = Tso::txnTs();
+        $this->setTs($txnTs);
+
+        $txnSnapShot = $this->storage->getTxnSnapShot();
+        if (is_null($txnSnapShot)) {
+            $txnSnapShot = new Snapshot();
+        }
+        $txnSnapShot->addIdList([$txnTs]);
+
         $this->setStatus(TxnConst::STATUS_BEGIN);
-        return $this->add();
+        $result = $this->add();
+
+        if ($result) {
+            $result = $this->storage->saveTxnSnapShot($txnSnapShot);
+            if (!$result) {
+                $this->rollback();
+            }
+        }
+
+        if ($result) {
+            return $txnTs;
+        } else {
+            return 0;
+        }
     }
 
     /**
@@ -290,13 +313,33 @@ class Txn
      */
     public function rollback()
     {
-        if ($this->getStatus() !== TxnConst::STATUS_BEGIN) {
-            throw new \Exception('Txn[' . ((string)$this->getTs()) . '] has not been begun');
+        $txnStatus = $this->getStatus();
+
+        if (!in_array($txnStatus, [TxnConst::STATUS_BEGIN, TxnConst::STATUS_ROLLBACK])) {
+            throw new \Exception(
+                'Txn[' . ((string)$this->getTs()) . '] status[' . ((string)$this->getStatus()) .
+                '] not allowed to rollback'
+            );
         }
 
         $this->executeUndoLogs();
-        $this->setStatus(TxnConst::STATUS_ROLLBACK);
-        $this->update();
+
+        //todo txn必须存在于snapshot才有效
+
+        $txnSnapShot = $this->storage->getTxnSnapShot();
+        if (!is_null($txnSnapShot)) {
+            $txnTs = $this->getTs();
+            if (in_array($txnTs, $txnSnapShot->getIdList())) {
+                $txnSnapShot->delIdList([$txnTs]);
+                $this->storage->saveTxnSnapShot($txnSnapShot);
+            }
+        }
+
+        if ($txnStatus !== TxnConst::STATUS_ROLLBACK) {
+            $this->setStatus(TxnConst::STATUS_ROLLBACK);
+            $this->update();
+        }
+
         $this->storage->delTxn($this->getTs());
     }
 

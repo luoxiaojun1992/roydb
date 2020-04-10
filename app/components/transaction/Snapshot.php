@@ -39,6 +39,16 @@ class Snapshot
     }
 
     /**
+     * @param array $idList
+     * @return $this
+     */
+    public function delIdList(array $idList): self
+    {
+        $this->idList = array_diff($this->idList, $idList);
+        return $this;
+    }
+
+    /**
      * @return array
      */
     public function getIdListGaps(): array
