@@ -34,6 +34,8 @@ class Ast
         } else {
             if ($this->sql === 'BEGIN') {
                 $this->stmtType = Stmt::TYPE_BEGIN;
+            } elseif ($this->sql === 'COMMIT') {
+                $this->stmtType = Stmt::TYPE_COMMIT;
             }
         }
     }

@@ -9,4 +9,5 @@ class Stmt
     const TYPE_DELETE = 'delete';
     const TYPE_UPDATE = 'update';
     const TYPE_BEGIN = 'begin';
+    const TYPE_COMMIT = 'commit';
 }

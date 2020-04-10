@@ -8,6 +8,7 @@ use App\components\elements\condition\Operand;
 use App\components\math\OperatorHandler;
 use App\components\metric\Cardinality;
 use App\components\metric\Histogram;
+use App\components\transaction\Snapshot;
 use Co\Channel;
 use SwFwLess\components\swoole\Scheduler;
 
@@ -74,17 +75,17 @@ abstract class KvStorage extends AbstractStorage
 
     public function addSchemaMetaData($schema, $metaData)
     {
-        // TODO: Implement
+        // TODO: Implement addSchemaMetaData() method.
     }
 
     public function delSchemaMetaData($schema)
     {
-        // TODO: Implement
+        // TODO: Implement delSchemaMetaData() method.
     }
 
     public function updateSchemaMetaData($schema, $metaData)
     {
-        // TODO: Implement
+        // TODO: Implement updateSchemaMetaData() method.
     }
 
     public function getTxn($txnId)
@@ -105,6 +106,16 @@ abstract class KvStorage extends AbstractStorage
     public function updateTxn($txnId, $txnJson)
     {
         // TODO: Implement updateTxn() method.
+    }
+
+    public function getTxnSnapShot(): ?Snapshot
+    {
+        // TODO: Implement getTxnSnapShot() method.
+    }
+
+    public function saveTxnSnapShot(Snapshot $snapshot)
+    {
+        // TODO: Implement saveTxnSnapShot() method.
     }
 
     /**
