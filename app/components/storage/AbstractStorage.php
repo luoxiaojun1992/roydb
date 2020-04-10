@@ -2,6 +2,8 @@
 
 namespace App\components\storage;
 
+use App\components\transaction\Snapshot;
+
 abstract class AbstractStorage
 {
     abstract public function get($schema, $condition, $limit, $indexSuggestions, $usedColumns);
@@ -28,7 +30,11 @@ abstract class AbstractStorage
 
     abstract public function addTxn($txnId, $txnJson);
 
-    abstract public function delTxn($txnId)
+    abstract public function delTxn($txnId);
 
     abstract public function updateTxn($txnId, $txnJson);
+
+    abstract public function getTxnSnapShot() : ?Snapshot;
+
+    abstract public function saveTxnSnapShot(Snapshot $snapshot);
 }

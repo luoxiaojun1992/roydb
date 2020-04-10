@@ -47,7 +47,6 @@ class BeginPlan
 
         $txnTs = $this->getTxnTs();
 
-        /** @var Snapshot $txnSnapShot */
         $txnSnapShot = $this->storage->getTxnSnapShot();
         if (is_null($txnSnapShot)) {
             $txnSnapShot = new Snapshot();
