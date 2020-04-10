@@ -6,6 +6,7 @@ use App\components\Ast;
 use App\components\storage\AbstractStorage;
 use App\components\transaction\Snapshot;
 use App\components\transaction\Txn;
+use App\components\Tso;
 
 class BeginPlan
 {
@@ -27,20 +28,22 @@ class BeginPlan
         $this->storage = $storage;
     }
 
+    /**
+     * @return int
+     * @throws \Throwable
+     */
     protected function getTxnTs()
     {
-        //todo sequence from redis
-
-        return 1;
+        return Tso::txnTs();
     }
 
     /**
      * @return int
-     * @throws \Exception
+     * @throws \Throwable
      */
     public function execute()
     {
-        //todo
+        //todo lock snapshot
 
         $txnTs = $this->getTxnTs();
 

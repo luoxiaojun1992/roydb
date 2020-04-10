@@ -8,6 +8,7 @@ use App\components\storage\AbstractStorage;
 use App\components\transaction\log\AbstractLog;
 use App\components\transaction\log\RedoLog;
 use App\components\transaction\log\UndoLog;
+use App\components\Tso;
 
 class Txn
 {
@@ -300,7 +301,7 @@ class Txn
     }
 
     /**
-     * @throws \Exception
+     * @throws \Throwable
      */
     public function commit()
     {
@@ -308,7 +309,7 @@ class Txn
             throw new \Exception('Txn[' . ((string)$this->getTs()) . '] has not been begun');
         }
 
-        $this->setCommitTs();
+        $this->setCommitTs(Tso::txnCommitTs());
         $this->setStatus(TxnConst::STATUS_COMMITTED);
         $this->update();
     }
