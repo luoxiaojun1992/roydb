@@ -235,8 +235,7 @@ class Txn
      */
     public function isCommitted(): bool
     {
-        //todo
-        return true;
+        return $this->getStatus() === TxnConst::STATUS_COMMITTED;
     }
 
     /**
