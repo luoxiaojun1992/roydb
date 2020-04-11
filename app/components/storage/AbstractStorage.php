@@ -37,4 +37,8 @@ abstract class AbstractStorage
     abstract public function getTxnSnapShot() : ?Snapshot;
 
     abstract public function saveTxnSnapShot(Snapshot $snapshot);
+
+    abstract public function getTxnGCSnapShot() : ?Snapshot;
+
+    abstract public function saveTxnGCSnapShot(Snapshot $gcSnapshot);
 }

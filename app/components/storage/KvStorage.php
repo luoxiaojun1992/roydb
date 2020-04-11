@@ -119,6 +119,16 @@ abstract class KvStorage extends AbstractStorage
         // TODO: Implement saveTxnSnapShot() method.
     }
 
+    public function getTxnGCSnapShot(): ?Snapshot
+    {
+        // TODO: Implement getTxnGCSnapShot() method.
+    }
+
+    public function saveTxnGCSnapShot(Snapshot $gcSnapshot)
+    {
+        // TODO: Implement saveTxnGCSnapShot() method.
+    }
+
     /**
      * @param $schema
      * @param $field

@@ -4,6 +4,7 @@ namespace App\components\transaction;
 
 use App\components\consts\Log as LogConst;
 use App\components\consts\Txn as TxnConst;
+use App\components\Lock;
 use App\components\storage\AbstractStorage;
 use App\components\transaction\log\AbstractLog;
 use App\components\transaction\log\RedoLog;
@@ -360,13 +361,11 @@ class Txn
         }
 
         if ($continue) {
-            $continue = $this->storage->delTxn($txnTs);
-        }
-
-        if ($continue) {
             $lockKeys = $this->getLockKeys();
             foreach ($lockKeys as $lockKey) {
-                //todo del locks using redis
+                if (!Lock::txnUnLock($lockKey)) {
+                    $continue = false;
+                }
             }
         }
 
@@ -374,7 +373,11 @@ class Txn
             //todo lock snapshot
             $txnSnapShot = $this->storage->getTxnSnapShot();
             $txnSnapShot->delIdList([$txnTs]);
-            return $this->storage->saveTxnSnapShot($txnSnapShot);
+            $continue = $this->storage->saveTxnSnapShot($txnSnapShot);
+        }
+
+        if ($continue) {
+            return $this->storage->delTxn($txnTs);
         }
 
         return false;
@@ -406,6 +409,15 @@ class Txn
                     ->setCommitTs(Tso::txnCommitTs())
                     ->setCommitTxnSnapshot($currentTxnSnapShot)
                     ->update();
+            }
+        }
+
+        if ($continue) {
+            $lockKeys = $this->getLockKeys();
+            foreach ($lockKeys as $lockKey) {
+                if (!Lock::txnUnLock($lockKey)) {
+                    $continue = false;
+                }
             }
         }
 
