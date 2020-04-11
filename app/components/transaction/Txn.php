@@ -431,6 +431,13 @@ class Txn
         }
 
         if ($continue) {
+            if (in_array($txnTs, $currentTxnSnapShot->getIdList())) {
+                $currentTxnSnapShot->delIdList([$txnTs]);
+                return $this->storage->saveTxnSnapShot($currentTxnSnapShot);
+            }
+        }
+
+        if ($continue) {
             $commitTxnIdList = $this->getCommitTxnSnapshot()->getIdList();
             $toDeleteTxn = true;
             foreach ($commitTxnIdList as $commitTxnId) {
@@ -465,14 +472,7 @@ class Txn
             }
         }
 
-        if ($continue) {
-            if (in_array($txnTs, $currentTxnSnapShot->getIdList())) {
-                $currentTxnSnapShot->delIdList([$txnTs]);
-                return $this->storage->saveTxnSnapShot($currentTxnSnapShot);
-            }
-        }
-
-        return false;
+        return $continue;
     }
 
     /**
