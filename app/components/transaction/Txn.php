@@ -378,14 +378,14 @@ class Txn
         }
 
         if ($continue) {
-            //todo lock snapshot
-            $txnSnapShot = $this->storage->getTxnSnapShot();
-            $txnSnapShot->delIdList([$txnTs]);
-            $continue = $this->storage->saveTxnSnapShot($txnSnapShot);
+            $continue = $this->storage->delTxn($txnTs);
         }
 
         if ($continue) {
-            return $this->storage->delTxn($txnTs);
+            //todo lock snapshot
+            $txnSnapShot = $this->storage->getTxnSnapShot();
+            $txnSnapShot->delIdList([$txnTs]);
+            return $this->storage->saveTxnSnapShot($txnSnapShot);
         }
 
         return false;
@@ -430,13 +430,6 @@ class Txn
         }
 
         if ($continue) {
-            if (in_array($txnTs, $currentTxnSnapShot->getIdList())) {
-                $currentTxnSnapShot->delIdList([$txnTs]);
-                return $this->storage->saveTxnSnapShot($currentTxnSnapShot);
-            }
-        }
-
-        if ($continue) {
             $commitTxnIdList = $this->getCommitTxnSnapshot()->getIdList();
             $toDeleteTxn = true;
             foreach ($commitTxnIdList as $commitTxnId) {
@@ -469,6 +462,13 @@ class Txn
                         $continue = false;
                     }
                 }
+            }
+        }
+
+        if ($continue) {
+            if (in_array($txnTs, $currentTxnSnapShot->getIdList())) {
+                $currentTxnSnapShot->delIdList([$txnTs]);
+                return $this->storage->saveTxnSnapShot($currentTxnSnapShot);
             }
         }
 
