@@ -273,7 +273,7 @@ class Txn
     }
 
     /**
-     * @return mixed
+     * @return int
      * @throws \Throwable
      */
     public function begin()
@@ -285,6 +285,7 @@ class Txn
         $txnTs = Tso::txnTs();
         $this->setTs($txnTs);
 
+        //todo lock snapshot
         $txnSnapShot = $this->storage->getTxnSnapShot();
         if (is_null($txnSnapShot)) {
             $txnSnapShot = new Snapshot();
@@ -324,23 +325,33 @@ class Txn
 
         $this->executeUndoLogs();
 
-        //todo txn必须存在于snapshot才有效
+        $continue = true;
 
         $txnSnapShot = $this->storage->getTxnSnapShot();
         if (!is_null($txnSnapShot)) {
             $txnTs = $this->getTs();
             if (in_array($txnTs, $txnSnapShot->getIdList())) {
                 $txnSnapShot->delIdList([$txnTs]);
-                $this->storage->saveTxnSnapShot($txnSnapShot);
+                if (!$this->storage->saveTxnSnapShot($txnSnapShot)) {
+                    $continue = false;
+                }
             }
         }
 
-        if ($txnStatus !== TxnConst::STATUS_ROLLBACK) {
-            $this->setStatus(TxnConst::STATUS_ROLLBACK);
-            $this->update();
+        if ($continue) {
+            if ($txnStatus !== TxnConst::STATUS_ROLLBACK) {
+                $this->setStatus(TxnConst::STATUS_ROLLBACK);
+                if (!$this->update()) {
+                    $continue = false;
+                }
+            }
         }
 
-        $this->storage->delTxn($this->getTs());
+        if ($continue) {
+            return $this->storage->delTxn($this->getTs());
+        }
+
+        return false;
     }
 
     /**
@@ -355,6 +366,22 @@ class Txn
         $this->setCommitTs(Tso::txnCommitTs());
         $this->setStatus(TxnConst::STATUS_COMMITTED);
         $this->update();
+    }
+
+    /**
+     * @return bool
+     */
+    public function valid()
+    {
+        $txnSnapShot = $this->storage->getTxnSnapShot();
+        if (!is_null($txnSnapShot)) {
+            $txnTs = $this->getTs();
+            if (in_array($txnTs, $txnSnapShot->getIdList())) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**

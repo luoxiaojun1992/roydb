@@ -4,7 +4,6 @@ namespace App\components\plans;
 
 use App\components\Ast;
 use App\components\storage\AbstractStorage;
-use App\components\transaction\Snapshot;
 use App\components\transaction\Txn;
 use App\components\Tso;
 
@@ -43,28 +42,6 @@ class BeginPlan
      */
     public function execute()
     {
-        //todo lock snapshot
-
-        $txnTs = $this->getTxnTs();
-
-        $txnSnapShot = $this->storage->getTxnSnapShot();
-        if (is_null($txnSnapShot)) {
-            $txnSnapShot = new Snapshot();
-        }
-        $txnSnapShot->addIdList([$txnTs]);
-
-        $txn = Txn::create($this->storage)
-            ->setTs($txnTs)
-            ->setTxnSnapshot($txnSnapShot);
-
-        if ($txn->begin()) {
-            if ($this->storage->saveTxnSnapShot($txnSnapShot)) {
-                return $txnTs;
-            } else {
-                $txn->rollback();
-            }
-        }
-
-        return 0;
+        return Txn::create($this->storage)->begin();
     }
 }
