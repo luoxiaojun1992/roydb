@@ -343,55 +343,6 @@ class Txn
     }
 
     /**
-     * @throws \Exception
-     */
-    public function rollback()
-    {
-        $txnStatus = $this->getStatus();
-        $txnTs = $this->getTs();
-
-        if (!in_array($txnStatus, [TxnConst::STATUS_ACTIVE, TxnConst::STATUS_CANCELED])) {
-            throw new \Exception(
-                'Txn[' . ((string)$txnTs) . '] status[' . ((string)$txnStatus) .
-                '] not allowed for rollback'
-            );
-        }
-
-        $this->executeUndoLogs();
-
-        $continue = true;
-
-        if ($continue) {
-            if ($txnStatus !== TxnConst::STATUS_CANCELED) {
-                $this->setStatus(TxnConst::STATUS_CANCELED);
-                $continue = $this->update();
-            }
-        }
-
-        if ($continue) {
-            $lockKeys = $this->getLockKeys();
-            foreach ($lockKeys as $lockKey) {
-                if (!Lock::txnUnLock($lockKey)) {
-                    $continue = false;
-                }
-            }
-        }
-
-        if ($continue) {
-            $continue = $this->storage->delTxn($txnTs);
-        }
-
-        if ($continue) {
-            //todo lock snapshot
-            $txnSnapShot = $this->storage->getTxnSnapShot();
-            $txnSnapShot->delIdList([$txnTs]);
-            return $this->storage->saveTxnSnapShot($txnSnapShot);
-        }
-
-        return false;
-    }
-
-    /**
      * @throws \Throwable
      */
     public function commit()
@@ -473,6 +424,55 @@ class Txn
         }
 
         return $continue;
+    }
+
+    /**
+     * @throws \Exception
+     */
+    public function rollback()
+    {
+        $txnStatus = $this->getStatus();
+        $txnTs = $this->getTs();
+
+        if (!in_array($txnStatus, [TxnConst::STATUS_ACTIVE, TxnConst::STATUS_CANCELED])) {
+            throw new \Exception(
+                'Txn[' . ((string)$txnTs) . '] status[' . ((string)$txnStatus) .
+                '] not allowed for rollback'
+            );
+        }
+
+        $this->executeUndoLogs();
+
+        $continue = true;
+
+        if ($continue) {
+            if ($txnStatus !== TxnConst::STATUS_CANCELED) {
+                $this->setStatus(TxnConst::STATUS_CANCELED);
+                $continue = $this->update();
+            }
+        }
+
+        if ($continue) {
+            $lockKeys = $this->getLockKeys();
+            foreach ($lockKeys as $lockKey) {
+                if (!Lock::txnUnLock($lockKey)) {
+                    $continue = false;
+                }
+            }
+        }
+
+        if ($continue) {
+            $continue = $this->storage->delTxn($txnTs);
+        }
+
+        if ($continue) {
+            //todo lock snapshot
+            $txnSnapShot = $this->storage->getTxnSnapShot();
+            $txnSnapShot->delIdList([$txnTs]);
+            return $this->storage->saveTxnSnapShot($txnSnapShot);
+        }
+
+        return false;
     }
 
     /**
