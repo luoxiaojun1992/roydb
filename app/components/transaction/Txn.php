@@ -322,11 +322,11 @@ class Txn
         $txnSnapShot = $this->storage->getTxnSnapShot();
         if (is_null($txnSnapShot)) {
             $txnSnapShot = new Snapshot();
-        } else {
-            if (!in_array($txnTs, $txnSnapShot->getIdList())) {
-                $txnSnapShot->addIdList([$txnTs]);
-                $continue = $this->storage->saveTxnSnapShot($txnSnapShot);
-            }
+        }
+
+        if (!in_array($txnTs, $txnSnapShot->getIdList())) {
+            $txnSnapShot->addIdList([$txnTs]);
+            $continue = $this->storage->saveTxnSnapShot($txnSnapShot);
         }
 
         if ($continue) {
