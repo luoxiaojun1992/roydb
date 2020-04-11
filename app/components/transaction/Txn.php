@@ -301,37 +301,36 @@ class Txn
      */
     public function begin()
     {
-        //todo bugfix
-
         if ($this->getStatus() !== TxnConst::STATUS_PENDING) {
             throw new \Exception('Txn[' . ((string)$this->getTs()) . '] status is not pending');
         }
 
         $txnTs = Tso::txnTs();
-        $this->setTs($txnTs);
+
+        $continue = true;
 
         //todo lock snapshot
         $txnSnapShot = $this->storage->getTxnSnapShot();
         if (is_null($txnSnapShot)) {
             $txnSnapShot = new Snapshot();
-        }
-        $txnSnapShot->addIdList([$txnTs]);
-
-        $this->setStatus(TxnConst::STATUS_ACTIVE);
-        $result = $this->add();
-
-        if ($result) {
-            $result = $this->storage->saveTxnSnapShot($txnSnapShot);
-            if (!$result) {
-                $this->rollback();
+        } else {
+            if (!in_array($txnTs, $txnSnapShot->getIdList())) {
+                $txnSnapShot->addIdList([$txnTs]);
+                $continue = $this->storage->saveTxnSnapShot($txnSnapShot);
             }
         }
 
-        if ($result) {
-            return $txnTs;
-        } else {
-            return 0;
+        if ($continue) {
+            if ($this->setStatus(TxnConst::STATUS_ACTIVE)
+                ->setTxnSnapshot($txnSnapShot)
+                ->setTs($txnTs)
+                ->add()
+            ) {
+                return $txnTs;
+            }
         }
+
+        return 0;
     }
 
     /**
