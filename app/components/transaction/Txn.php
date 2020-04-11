@@ -231,11 +231,44 @@ class Txn
     }
 
     /**
+     * @param int $status
+     * @return bool
+     */
+    public function isStatus(int $status): bool
+    {
+        return $this->getStatus() === $status;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isPending(): bool
+    {
+        return $this->isStatus(TxnConst::STATUS_PENDING);
+    }
+
+    /**
+     * @return bool
+     */
+    public function isActive(): bool
+    {
+        return $this->isStatus(TxnConst::STATUS_ACTIVE);
+    }
+
+    /**
      * @return bool
      */
     public function isCommitted(): bool
     {
-        return $this->getStatus() === TxnConst::STATUS_COMMITTED;
+        return $this->isStatus(TxnConst::STATUS_COMMITTED);
+    }
+
+    /**
+     * @return bool
+     */
+    public function isCanceled(): bool
+    {
+        return $this->isStatus(TxnConst::STATUS_CANCELED);
     }
 
     /**
