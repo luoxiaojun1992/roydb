@@ -231,6 +231,15 @@ class Txn
     }
 
     /**
+     * @return bool
+     */
+    public function isCommitted(): bool
+    {
+        //todo
+        return true;
+    }
+
+    /**
      * @return false|string
      */
     public function __toString()
@@ -430,7 +439,7 @@ class Txn
                 }
 
                 $commitTxn = self::fromTxnId($commitTxnId, $this->getStorage());
-                if ((!is_null($commitTxn)) && (!$commitTxn->isCommited())) {
+                if ((!is_null($commitTxn)) && (!$commitTxn->isCommitted())) {
                     $toDeleteTxn = false;
                 }
             }
