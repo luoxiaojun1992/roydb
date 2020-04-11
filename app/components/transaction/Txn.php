@@ -31,6 +31,9 @@ class Txn
     /** @var Snapshot */
     protected $txnSnapshot;
 
+    /** @var Snapshot */
+    protected $commitTxnSnapshot;
+
     /** @var AbstractStorage */
     protected $storage;
 
@@ -191,6 +194,24 @@ class Txn
     }
 
     /**
+     * @return Snapshot
+     */
+    public function getCommitTxnSnapshot(): Snapshot
+    {
+        return $this->commitTxnSnapshot;
+    }
+
+    /**
+     * @param Snapshot $commitTxnSnapshot
+     * @return $this
+     */
+    public function setCommitTxnSnapshot(Snapshot $commitTxnSnapshot): self
+    {
+        $this->commitTxnSnapshot = $commitTxnSnapshot;
+        return $this;
+    }
+
+    /**
      * @return AbstractStorage
      */
     public function getStorage(): AbstractStorage
@@ -251,6 +272,7 @@ class Txn
         foreach ($logs as $log) {
             switch ($log->getOp()) {
                 case LogConst::OP_ADD_SCHEMA_DATA:
+                    //constrained by pk
                     $this->storage->add($log->getSchema(), $log->getRows());
                     break;
                 case LogConst::OP_UPDATE_SCHEMA_DATA:
@@ -260,6 +282,7 @@ class Txn
                     $this->storage->del($log->getSchema(), $log->getRowPkList());
                     break;
                 case LogConst::OP_ADD_SCHEMA_META:
+                    //constrained by schema
                     $this->storage->addSchemaMetaData($log->getSchema(), $log->getMetaData());
                     break;
                 case LogConst::OP_UPDATE_SCHEMA_META:
@@ -292,7 +315,7 @@ class Txn
         }
         $txnSnapShot->addIdList([$txnTs]);
 
-        $this->setStatus(TxnConst::STATUS_BEGIN);
+        $this->setStatus(TxnConst::STATUS_ACTIVE);
         $result = $this->add();
 
         if ($result) {
@@ -315,11 +338,12 @@ class Txn
     public function rollback()
     {
         $txnStatus = $this->getStatus();
+        $txnTs = $this->getTs();
 
-        if (!in_array($txnStatus, [TxnConst::STATUS_BEGIN, TxnConst::STATUS_ROLLBACK])) {
+        if (!in_array($txnStatus, [TxnConst::STATUS_ACTIVE, TxnConst::STATUS_CANCELED])) {
             throw new \Exception(
-                'Txn[' . ((string)$this->getTs()) . '] status[' . ((string)$this->getStatus()) .
-                '] not allowed to rollback'
+                'Txn[' . ((string)$txnTs) . '] status[' . ((string)$txnStatus) .
+                '] not allowed for rollback'
             );
         }
 
@@ -327,28 +351,28 @@ class Txn
 
         $continue = true;
 
-        $txnSnapShot = $this->storage->getTxnSnapShot();
-        if (!is_null($txnSnapShot)) {
-            $txnTs = $this->getTs();
-            if (in_array($txnTs, $txnSnapShot->getIdList())) {
-                $txnSnapShot->delIdList([$txnTs]);
-                if (!$this->storage->saveTxnSnapShot($txnSnapShot)) {
-                    $continue = false;
-                }
+        if ($continue) {
+            if ($txnStatus !== TxnConst::STATUS_CANCELED) {
+                $this->setStatus(TxnConst::STATUS_CANCELED);
+                $continue = $this->update();
             }
         }
 
         if ($continue) {
-            if ($txnStatus !== TxnConst::STATUS_ROLLBACK) {
-                $this->setStatus(TxnConst::STATUS_ROLLBACK);
-                if (!$this->update()) {
-                    $continue = false;
-                }
+            $continue = $this->storage->delTxn($txnTs);
+        }
+
+        if ($continue) {
+            $lockKeys = $this->getLockKeys();
+            foreach ($lockKeys as $lockKey) {
+                //todo del locks using redis
             }
         }
 
         if ($continue) {
-            return $this->storage->delTxn($this->getTs());
+            $txnSnapShot = $this->storage->getTxnSnapShot();
+            $txnSnapShot->delIdList([$txnTs]);
+            return $this->storage->saveTxnSnapShot($txnSnapShot);
         }
 
         return false;
@@ -359,25 +383,47 @@ class Txn
      */
     public function commit()
     {
-        if ($this->getStatus() !== TxnConst::STATUS_BEGIN) {
-            throw new \Exception('Txn[' . ((string)$this->getTs()) . '] has not been begun');
+        $txnStatus = $this->getStatus();
+        $txnTs = $this->getTs();
+
+        if (!in_array($txnStatus, [TxnConst::STATUS_ACTIVE, TxnConst::STATUS_COMMITTED])) {
+            throw new \Exception(
+                'Txn[' . ((string)$txnTs) . '] status[' . ((string)$txnStatus) .
+                '] not allowed for committing'
+            );
         }
 
-        $this->setCommitTs(Tso::txnCommitTs());
-        $this->setStatus(TxnConst::STATUS_COMMITTED);
-        $this->update();
-    }
+        $continue = true;
 
-    /**
-     * @return bool
-     */
-    public function valid()
-    {
-        $txnSnapShot = $this->storage->getTxnSnapShot();
-        if (!is_null($txnSnapShot)) {
-            $txnTs = $this->getTs();
-            if (in_array($txnTs, $txnSnapShot->getIdList())) {
-                return true;
+        $currentTxnSnapShot = $this->storage->getTxnSnapShot();
+
+        if ($continue) {
+            if ($txnStatus !== TxnConst::STATUS_COMMITTED) {
+                $continue = $this->setStatus(TxnConst::STATUS_COMMITTED)
+                    ->setCommitTs(Tso::txnCommitTs())
+                    ->setCommitTxnSnapshot($currentTxnSnapShot)
+                    ->update();
+            }
+        }
+
+        if ($continue) {
+            $currentTxnIdList = $currentTxnSnapShot->getIdList();
+            if (count($currentTxnIdList) > 1) { //txn cannot be deleted, because other txns using the undo log of this
+                $txnGcSnapShot = $this->storage->getTxnGCSnapShot();
+                $txnGcSnapShot->addIdList($this->getTs());
+                $continue = $this->storage->saveTxnGCSnapShot($txnGcSnapShot)
+            } else {
+                $continue = $this->storage->delTxn($txnTs);
+            }
+        }
+
+        if ($continue) {
+            $txnSnapShot = $this->storage->getTxnSnapShot();
+            if (!is_null($txnSnapShot)) {
+                if (in_array($txnTs, $txnSnapShot->getIdList())) {
+                    $txnSnapShot->delIdList([$txnTs]);
+                    return $this->storage->saveTxnSnapShot($txnSnapShot);
+                }
             }
         }
 

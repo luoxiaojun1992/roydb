@@ -108,6 +108,7 @@ abstract class KvStorage extends AbstractStorage
         // TODO: Implement updateTxn() method.
     }
 
+    //no cache
     public function getTxnSnapShot(): ?Snapshot
     {
         // TODO: Implement getTxnSnapShot() method.
