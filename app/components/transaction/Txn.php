@@ -450,6 +450,7 @@ class Txn
                 }
             }
 
+            //todo lock gc snapshot
             $txnGcSnapShot = $this->storage->getTxnGCSnapShot();
             if (is_null($txnGcSnapShot)) {
                 $txnGcSnapShot = new Snapshot();
