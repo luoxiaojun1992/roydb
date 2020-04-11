@@ -444,17 +444,24 @@ class Txn
                 }
             }
 
+            $txnGcSnapShot = $this->storage->getTxnGCSnapShot();
+            if (is_null($txnGcSnapShot)) {
+                $txnGcSnapShot = new Snapshot();
+            }
             if (!$toDeleteTxn) { //txn cannot be deleted, because other txns using the undo log of this
-                $txnGcSnapShot = $this->storage->getTxnGCSnapShot();
-                if (is_null($txnGcSnapShot)) {
-                    $txnGcSnapShot = new Snapshot();
-                }
                 if (!in_array($txnTs, $txnGcSnapShot->getIdList())) {
                     $txnGcSnapShot->addIdList([$txnTs]);
-                    $continue = $this->storage->saveTxnGCSnapShot($txnGcSnapShot)
+                    $continue = $this->storage->saveTxnGCSnapShot($txnGcSnapShot);
                 }
             } else {
                 $continue = $this->storage->delTxn($txnTs);
+                if (in_array($txnTs, $txnGcSnapShot->getIdList())) {
+                    if ($txnGcSnapShot->delIdList([$txnTs])) {
+                        $continue = $this->storage->saveTxnGCSnapShot($txnGcSnapShot);
+                    } else {
+                        $continue = false;
+                    }
+                }
             }
         }
 
