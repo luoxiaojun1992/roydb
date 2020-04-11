@@ -560,4 +560,14 @@ class Txn
     {
         return (new self())->setStorage($storage);
     }
+
+    public static function compactTxnSnapshot()
+    {
+        //todo
+    }
+
+    public static function compactTxnGCSnapshot()
+    {
+        //todo
+    }
 }

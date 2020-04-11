@@ -91,6 +91,20 @@ return [
                 \App\components\metric\Cardinality::dequeue();
             },
         ],
+        [
+            'name' => 'compact_txn_snapshot',
+            'schedule' => '* * * * *',
+            'jobs' => function () {
+                \App\components\transaction\Txn::compactTxnSnapshot();
+            },
+        ],
+        [
+            'name' => 'compact_txn_gc_snapshot',
+            'schedule' => '* * * * *',
+            'jobs' => function () {
+                \App\components\transaction\Txn::compactTxnGCSnapshot();
+            },
+        ],
     ],
 
     //You can turn off the switch to improve the performance
