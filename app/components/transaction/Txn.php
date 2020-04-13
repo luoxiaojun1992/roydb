@@ -6,6 +6,7 @@ use App\components\consts\Log as LogConst;
 use App\components\consts\Txn as TxnConst;
 use App\components\Lock;
 use App\components\storage\AbstractStorage;
+use App\components\storage\Storage;
 use App\components\transaction\log\AbstractLog;
 use App\components\transaction\log\RedoLog;
 use App\components\transaction\log\UndoLog;
@@ -563,11 +564,23 @@ class Txn
 
     public static function compactTxnSnapshot()
     {
+        $storage = Storage::create();
+        $txnSnapshot = $storage->getTxnSnapShot();
+        if (is_null($txnSnapshot)) {
+            return;
+        }
+
         //todo
     }
 
     public static function compactTxnGCSnapshot()
     {
+        $storage = Storage::create();
+        $txnGCSnapshot = $storage->getTxnGCSnapShot();
+        if (is_null($txnGCSnapshot)) {
+            return;
+        }
+
         //todo
     }
 }

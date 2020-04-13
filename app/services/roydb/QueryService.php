@@ -6,8 +6,7 @@ use App\components\optimizers\CostBasedOptimizer;
 use App\components\optimizers\RulesBasedOptimizer;
 use App\components\Parser;
 use App\components\plans\Plan;
-use App\components\storage\roykv\Roykv;
-use App\components\storage\tikv\TiKV;
+use App\components\storage\Storage;
 use Roydb\Field;
 use Roydb\RowData;
 use Roydb\SelectResponse;
@@ -28,7 +27,7 @@ class QueryService extends \SwFwLess\services\GrpcUnaryService implements QueryI
         $ast = Parser::fromSql($sql)->parseAst();
 
         //todo 数据库权限检查
-        $plan = Plan::create($ast, new TiKV());
+        $plan = Plan::create($ast, Storage::create());
         $plan = RulesBasedOptimizer::fromPlan($plan)->optimize();
         $plan = CostBasedOptimizer::fromPlan($plan)->optimize();
         $resultSet = $plan->execute();
