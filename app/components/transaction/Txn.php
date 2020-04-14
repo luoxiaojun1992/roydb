@@ -570,6 +570,9 @@ class Txn
             return;
         }
 
+        foreach ($txnSnapshot->getIdList() as $txnId) {
+
+        }
         //todo
     }
 
@@ -581,6 +584,9 @@ class Txn
             return;
         }
 
+        foreach ($txnGCSnapshot->getIdList() as $txnId) {
+
+        }
         //todo
     }
 }
