@@ -66,6 +66,15 @@ class Txn
     }
 
     /**
+     * @return RedoLog|null
+     */
+    public function getLastRedoLog(): ?RedoLog
+    {
+        $redoLogs = $this->getRedoLogs();
+        return end($redoLogs) ?: null;
+    }
+
+    /**
      * @param RedoLog[] $redoLogs
      * @return $this
      */
@@ -91,6 +100,15 @@ class Txn
     public function getUndoLogs(): array
     {
         return $this->undoLogs;
+    }
+
+    /**
+     * @return UndoLog|null
+     */
+    public function getLastUndoLog(): ?UndoLog
+    {
+        $undoLogs = $this->getUndoLogs();
+        return end($undoLogs) ?: null;
     }
 
     /**
