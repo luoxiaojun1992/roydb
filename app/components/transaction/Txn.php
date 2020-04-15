@@ -22,21 +22,22 @@ class Txn
     /** @var UndoLog[] $undoLogs  */
     protected array $undoLogs = [];
 
-    /** @var int */
+    /** @var int $ts */
     protected $ts;
 
-    /** @var int */
+    /** @var int $commitTs */
     protected $commitTs;
 
+    /** @var array $lockKeys */
     protected array $lockKeys = [];
 
-    /** @var Snapshot */
+    /** @var Snapshot $txnSnapshot */
     protected $txnSnapshot;
 
-    /** @var Snapshot */
+    /** @var Snapshot $commitTxnSnapshot */
     protected $commitTxnSnapshot;
 
-    /** @var AbstractStorage */
+    /** @var AbstractStorage $storage */
     protected $storage;
 
     /**
@@ -300,8 +301,10 @@ class Txn
             'redo_logs' => array_map(fn(RedoLog $redoLog) => $redoLog->toArray(), $this->getRedoLogs()),
             'undo_logs' => array_map(fn(UndoLog $undoLog) => $undoLog->toArray(), $this->getUndoLogs()),
             'ts' => $this->getTs(),
+            'commit_ts' => $this->getCommitTs(),
             'lock_keys' => $this->getLockKeys(),
             'txn_snapshot' => $this->getTxnSnapshot()->toArray(),
+            'commit_txn_snapshot' => $this->getCommitTxnSnapshot()->toArray(),
         ]);
     }
 
@@ -566,8 +569,16 @@ class Txn
                 )
             )
             ->setTs($txnArr['ts'])
+            ->setCommitTs($txnArr['commit_ts'])
             ->setLockKeys($txnArr['lock_keys'])
-            ->setTxnSnapshot((new Snapshot())->setIdList($txnArr['txn_snapshot']['id_list'])->setIdListGaps($txnArr['txn_snapshot']['id_list_gaps']))
+            ->setTxnSnapshot(
+                (new Snapshot())->setIdList($txnArr['txn_snapshot']['id_list'])
+                    ->setIdListGaps($txnArr['txn_snapshot']['id_list_gaps'])
+            )
+            ->setCommitTxnSnapshot(
+                (new Snapshot())->setIdList($txnArr['commit_txn_snapshot']['id_list'])
+                    ->setIdListGaps($txnArr['commit_txn_snapshot']['id_list_gaps'])
+            )
             ->setStorage($storage);
     }
 
