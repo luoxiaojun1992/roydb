@@ -602,7 +602,7 @@ class Txn
         foreach ($txnSnapshot->getIdList() as $txnId) {
 
         }
-        //todo
+        //todo snapshot 不加锁，txn加锁，优化
     }
 
     public static function compactTxnGCSnapshot()
