@@ -5,6 +5,8 @@ namespace App\services;
 use App\services\roydb\QueryClient;
 use App\services\roykv\KvClient;
 use App\services\tikv\TiKVClient;
+use Etcdserverpb\PutRequest;
+use Etcdserverpb\RangeRequest;
 use Roydb\SelectRequest;
 use Roykv\BeginRequest;
 use Roykv\CountRequest;
@@ -18,6 +20,35 @@ class QueryService extends BaseService
 {
     public function select()
     {
+//        $kvClient = new \Etcdserverpb\KVClient('127.0.0.1:2379');
+//        $kvClient->start();
+//        $request = new PutRequest();
+//        $request->setPrevKv(true);
+//        $request->setKey('Hello');
+//        $request->setValue('Swoole');
+//        list($reply, $status) = $kvClient->Put($request);
+//        if ($status === 0) {
+//            $rangeRequest = (new RangeRequest())->setKey('Hello')
+//                ->setRangeEnd('\0')
+//                ->setLimit(1);
+//            list($rangeResponse, $rangeStatus) = $kvClient->Range($rangeRequest);
+//            if ($rangeStatus === 0) {
+//                foreach ($rangeResponse->getKvs() as $kv) {
+//                    var_dump($kv->getValue());
+//                }
+//            }
+//        } else {
+//            echo "Error#{$status}\n";
+//        }
+//        $kvClient->close();
+//        return [
+//            'code' => -1,
+//            'msg' => 'failed',
+//            'data' => [
+//                'result_set' => [],
+//            ],
+//        ];
+
 //        $countReply = (new KvClient())->Count(
 //            (new CountRequest())->setStartKey('data.schema.test1::')
 //                ->setEndKey('')
