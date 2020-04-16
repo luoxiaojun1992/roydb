@@ -8,7 +8,6 @@ use App\services\tikv\TiKVClient;
 use Etcdserverpb\PutRequest;
 use Etcdserverpb\RangeRequest;
 use Roydb\SelectRequest;
-use Roykv\BeginRequest;
 use Roykv\CountRequest;
 use Roykvtikv\SetRequest;
 use SwFwLess\components\http\Response;
@@ -56,16 +55,6 @@ class QueryService extends BaseService
 //        );
 //
 //        var_dump($countReply->getCount());
-
-//        $client = new TxnClient();
-//        $reply = $client->Begin(new BeginRequest());
-//        var_dump($reply->getTxnId());
-//        return [
-//            'code' => 0,
-//            'msg' => 'ok',
-//            'data' => [
-//            ],
-//        ];
 
 //        $partitions = [];
 //        $partitions[] = [
