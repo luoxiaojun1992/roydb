@@ -2160,7 +2160,8 @@ abstract class KvStorage extends AbstractStorage
 
         $schemaMeta = $this->getSchemaMetaData($schema);
         if (!$schemaMeta) {
-            throw new \Exception('Schema ' . $schema . ' not exists');
+            //todo change other exception like this to runtime exception
+            throw new \RuntimeException('Schema ' . $schema . ' not exists');
         }
 
         $pk = $schemaMeta['pk'];
