@@ -5,6 +5,7 @@ return [
     \SwFwLess\components\swoole\SwooleProvider::class,
     \SwFwLess\components\swoole\counter\CounterProvider::class,
     \SwFwLess\components\redis\RedisProvider::class,
+    \SwFwLess\components\etcd\Provider::class,
 
     //App Providers
     \SwFwLess\components\chaos\ChaosProvider::class,

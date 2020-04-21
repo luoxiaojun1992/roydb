@@ -11,6 +11,7 @@ use Roydb\SelectRequest;
 use Roykv\CountRequest;
 use Roykvtikv\SetRequest;
 use SwFwLess\components\http\Response;
+use SwFwLess\facades\etcd\Etcd;
 use SwFwLess\facades\Log;
 use SwFwLess\facades\RedisPool;
 use SwFwLess\services\BaseService;
@@ -19,6 +20,15 @@ class QueryService extends BaseService
 {
     public function select()
     {
+//        var_dump(Etcd::put('foo', 'bar', 0));
+//        return [
+//            'code' => -1,
+//            'msg' => 'failed',
+//            'data' => [
+//                'result_set' => [],
+//            ],
+//        ];
+
 //        $kvClient = new \Etcdserverpb\KVClient('127.0.0.1:2379');
 //        $kvClient->start();
 //        $request = new PutRequest();
