@@ -11,6 +11,7 @@ class Tso
      */
     public static function txnTs()
     {
+        //todo replace using etcd
         $redis = RedisPool::pick();
         try {
             return $redis->incr('seq:txn:ts')
@@ -27,6 +28,7 @@ class Tso
      */
     public static function txnCommitTs()
     {
+        //todo replace using etcd
         $redis = RedisPool::pick();
         try {
             return $redis->incr('seq:txn:commit:ts')
