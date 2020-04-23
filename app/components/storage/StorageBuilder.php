@@ -2,7 +2,7 @@
 
 namespace App\components\storage;
 
-class Storage
+class StorageBuilder
 {
     /**
      * @return AbstractStorage

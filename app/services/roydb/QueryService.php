@@ -6,7 +6,7 @@ use App\components\optimizers\CostBasedOptimizer;
 use App\components\optimizers\RulesBasedOptimizer;
 use App\components\Parser;
 use App\components\plans\Plan;
-use App\components\storage\Storage;
+use App\components\storage\StorageBuilder;
 use Roydb\Field;
 use Roydb\RowData;
 use Roydb\SelectResponse;
@@ -27,7 +27,7 @@ class QueryService extends \SwFwLess\services\GrpcUnaryService implements QueryI
         $ast = Parser::fromSql($sql)->parseAst();
 
         //todo 数据库权限检查
-        $plan = Plan::create($ast, Storage::create());
+        $plan = Plan::create($ast, StorageBuilder::create());
         $plan = RulesBasedOptimizer::fromPlan($plan)->optimize();
         $plan = CostBasedOptimizer::fromPlan($plan)->optimize();
         $resultSet = $plan->execute();

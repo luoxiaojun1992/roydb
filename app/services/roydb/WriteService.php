@@ -6,7 +6,7 @@ use App\components\optimizers\CostBasedOptimizer;
 use App\components\optimizers\RulesBasedOptimizer;
 use App\components\Parser;
 use App\components\plans\Plan;
-use App\components\storage\Storage;
+use App\components\storage\StorageBuilder;
 use Roydb\DeleteResponse;
 use Roydb\InsertResponse;
 use Roydb\UpdateResponse;
@@ -26,7 +26,7 @@ class WriteService extends \SwFwLess\services\GrpcUnaryService implements WriteI
         $sql = $request->getSql();
         $ast = Parser::fromSql($sql)->parseAst();
         //todo 数据库权限检查
-        $plan = Plan::create($ast, Storage::create());
+        $plan = Plan::create($ast, StorageBuilder::create());
         $plan = RulesBasedOptimizer::fromPlan($plan)->optimize();
         $plan = CostBasedOptimizer::fromPlan($plan)->optimize();
         $affectedRows = $plan->execute();
@@ -44,7 +44,7 @@ class WriteService extends \SwFwLess\services\GrpcUnaryService implements WriteI
         $sql = $request->getSql();
         $ast = Parser::fromSql($sql)->parseAst();
         //todo 数据库权限检查
-        $plan = Plan::create($ast, Storage::create());
+        $plan = Plan::create($ast, StorageBuilder::create());
         $plan = RulesBasedOptimizer::fromPlan($plan)->optimize();
         $plan = CostBasedOptimizer::fromPlan($plan)->optimize();
         $affectedRows = $plan->execute();
@@ -62,7 +62,7 @@ class WriteService extends \SwFwLess\services\GrpcUnaryService implements WriteI
         $sql = $request->getSql();
         $ast = Parser::fromSql($sql)->parseAst();
         //todo 数据库权限检查
-        $plan = Plan::create($ast, Storage::create());
+        $plan = Plan::create($ast, StorageBuilder::create());
         $plan = RulesBasedOptimizer::fromPlan($plan)->optimize();
         $plan = CostBasedOptimizer::fromPlan($plan)->optimize();
         $affectedRows = $plan->execute();

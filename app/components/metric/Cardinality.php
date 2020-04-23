@@ -3,7 +3,7 @@
 namespace App\components\metric;
 
 use App\components\storage\AbstractStorage;
-use App\components\storage\Storage;
+use App\components\storage\StorageBuilder;
 use SwFwLess\facades\RateLimit;
 use SwFwLess\facades\RedisPool;
 
@@ -83,7 +83,7 @@ class Cardinality
                     continue;
                 }
 
-                self::create(Storage::create())->updateValueImmediately($newMetric['schema'], $newMetric['index']);
+                self::create(StorageBuilder::create())->updateValueImmediately($newMetric['schema'], $newMetric['index']);
             } catch (\Throwable $e) {
                 RedisPool::release($redis);
                 throw $e;
