@@ -2,7 +2,7 @@
 
 namespace App\components;
 
-use SwFwLess\facades\RedisPool;
+use SwFwLess\facades\etcd\Etcd;
 
 class Tso
 {
@@ -11,15 +11,7 @@ class Tso
      */
     public static function txnTs()
     {
-        //todo replace using etcd
-        $redis = RedisPool::pick();
-        try {
-            return $redis->incr('seq:txn:ts')
-        } catch (\Throwable $e) {
-            throw $e;
-        } finally {
-            RedisPool::release($redis);
-        }
+        return Etcd::incr('seq:txn:ts');
     }
 
     /**
@@ -28,14 +20,6 @@ class Tso
      */
     public static function txnCommitTs()
     {
-        //todo replace using etcd
-        $redis = RedisPool::pick();
-        try {
-            return $redis->incr('seq:txn:commit:ts')
-        } catch (\Throwable $e) {
-            throw $e;
-        } finally {
-            RedisPool::release($redis);
-        }
+        return Etcd::incr('seq:txn:commit:ts');
     }
 }
