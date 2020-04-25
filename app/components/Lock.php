@@ -6,8 +6,6 @@ use App\components\transaction\Txn;
 
 class Lock
 {
-    //todo
-
     public static function txnLock(Txn $txn, $lockKey)
     {
         $result = \SwFwLess\facades\etcd\Lock::lock($lockKey, 0, true);
@@ -22,13 +20,17 @@ class Lock
         //todo add txn id to lock info
     }
 
-    public static function txnUnLock($lockKey)
+    /**
+     * @param Txn $txn
+     * @param $lockKey
+     * @return bool
+     * @throws \Throwable
+     */
+    public static function txnUnLock(Txn $txn, $lockKey)
     {
-        //todo
-
         $result = \SwFwLess\facades\etcd\Lock::unlock($lockKey);
         if ($result) {
-            //todo remove lock key from txn
+            $txn->removeLockKeys([$lockKey]);
         }
 
         return $result;

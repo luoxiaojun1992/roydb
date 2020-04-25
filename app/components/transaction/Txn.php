@@ -197,6 +197,16 @@ class Txn
     }
 
     /**
+     * @param array $lockKeys
+     * @return $this
+     */
+    public function removeLockKeys(array $lockKeys): self
+    {
+        $this->lockKeys = array_diff($this->lockKeys, $lockKeys);
+        return $this;
+    }
+
+    /**
      * @return Snapshot
      */
     public function getTxnSnapshot(): Snapshot
@@ -429,7 +439,7 @@ class Txn
         if ($continue) {
             $lockKeys = $this->getLockKeys();
             foreach ($lockKeys as $lockKey) {
-                if (!Lock::txnUnLock($lockKey)) {
+                if (!Lock::txnUnLock($this, $lockKey)) {
                     $continue = false;
                 }
             }
@@ -482,7 +492,8 @@ class Txn
     }
 
     /**
-     * @throws \Exception
+     * @return bool
+     * @throws \Throwable
      */
     public function rollback()
     {
@@ -510,7 +521,7 @@ class Txn
         if ($continue) {
             $lockKeys = $this->getLockKeys();
             foreach ($lockKeys as $lockKey) {
-                if (!Lock::txnUnLock($lockKey)) {
+                if (!Lock::txnUnLock($this, $lockKey)) {
                     $continue = false;
                 }
             }
