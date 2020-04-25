@@ -4,7 +4,6 @@ namespace App\components\transaction;
 
 use App\components\consts\Log as LogConst;
 use App\components\consts\Txn as TxnConst;
-use App\components\Lock;
 use App\components\storage\AbstractStorage;
 use App\components\storage\StorageBuilder;
 use App\components\transaction\log\AbstractLog;

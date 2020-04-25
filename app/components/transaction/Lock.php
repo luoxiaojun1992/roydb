@@ -1,8 +1,6 @@
 <?php
 
-namespace App\components;
-
-use App\components\transaction\Txn;
+namespace App\components\transaction;
 
 class Lock
 {
