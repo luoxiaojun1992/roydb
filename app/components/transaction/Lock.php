@@ -6,16 +6,18 @@ class Lock
 {
     public static function txnLock(Txn $txn, $lockKey)
     {
+        //todo add txn id to lock info
         $result = \SwFwLess\facades\etcd\Lock::lock($lockKey, 0, true);
         if (!$result) {
-            //todo 判断锁的持有者
+            $txnTs = \SwFwLess\facades\etcd\Lock::get($lockKey);
+            $result = intval($txnTs) === $txn->getTs();
         }
 
         if ($result) {
             $txn->addLockKeys([$lockKey]);
         }
 
-        //todo add txn id to lock info
+        return $result;
     }
 
     /**
