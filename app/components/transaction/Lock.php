@@ -29,6 +29,7 @@ class Lock
      */
     public static function txnUnLock(Txn $txn, $lockKey)
     {
+        Etcd::del('lock_info:' . $lockKey);
         $result = \SwFwLess\facades\etcd\Lock::unlock($lockKey);
         if ($result) {
             $txn->removeLockKeys([$lockKey]);
