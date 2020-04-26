@@ -1149,10 +1149,7 @@ class QueryPlan implements PlanInterface
                 $udfParameters[] = (new Column())->setValue($filtered)
                     ->setType('const');
             } else {
-                $udfParameters[] = (new Column())->setValue($subColumn->getValue())
-                    ->setType($subColumn->getType())
-                    ->setSubColumns($subColumn->getSubColumns())
-                    ->setAlias($subColumn->getAlias());
+                $udfParameters[] = Column::cloneFromColumn($column);
             }
         }
 
@@ -1315,7 +1312,7 @@ class QueryPlan implements PlanInterface
     }
 
     /**
-     * @param $columns
+     * @param Column[] $columns
      * @param $resultSet
      * @return mixed
      * @throws \Exception
@@ -1327,15 +1324,14 @@ class QueryPlan implements PlanInterface
 
             foreach ($columns as $column) {
                 if (!$column->hasSubColumns()) {
-                    $columnType = $column->getType();
                     $columnAlias = $column->getAlias();
                     $columnAliasName = isset($columnAlias) ? $columnAlias['name'] : null;
                     $originColumnName = $column->getValue();
                     $columnName= $columnAliasName ?? $originColumnName;
 
-                    if ($columnType === 'const') {
+                    if ($column->isConst()) {
                         $filteredRow[$columnName] = $originColumnName;
-                    } elseif ($columnType === 'colref') {
+                    } elseif ($column->isColref()) {
                         if ($columnName !== '*') {
                             $filteredRow[$columnName] = $row[$originColumnName] ?? null;
                         } else {

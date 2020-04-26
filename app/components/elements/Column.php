@@ -11,7 +11,16 @@ class Column
     protected $alias;
 
     /** @var Column[]  */
-    protected $subColumns = [];
+    protected array $subColumns = [];
+
+    public static function cloneFromColumn(self $column)
+    {
+        return (new self())
+            ->settype($column->getType())
+            ->setValue($column->getValue())
+            ->setAlias($column->getAlias())
+            ->setSubColumns($column->getSubColumns());
+    }
 
     /**
      * @param $type
@@ -64,6 +73,16 @@ class Column
     public function isUdf()
     {
         return in_array($this->getType(), ['aggregate_function', 'function']);
+    }
+
+    public function isColref()
+    {
+        return $this->getType() === 'colref';
+    }
+
+    public function isConst()
+    {
+        return $this->getType() === 'const';
     }
 
     /**
