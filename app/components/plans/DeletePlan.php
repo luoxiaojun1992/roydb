@@ -8,7 +8,7 @@ use App\components\optimizers\RulesBasedOptimizer;
 use App\components\storage\AbstractStorage;
 use PHPSQLParser\PHPSQLCreator;
 
-class DeletePlan
+class DeletePlan implements PlanInterface
 {
     /** @var Ast */
     protected $ast;
@@ -22,9 +22,9 @@ class DeletePlan
      * DeletePlan constructor.
      * @param Ast $ast
      * @param AbstractStorage $storage
-     * @throws \Exception
+     * @param int $txnId
      */
-    public function __construct(Ast $ast, AbstractStorage $storage)
+    public function __construct(Ast $ast, AbstractStorage $storage, int $txnId = 0)
     {
         $this->ast = $ast;
         $this->storage = $storage;

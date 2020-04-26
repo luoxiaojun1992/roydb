@@ -6,7 +6,7 @@ use App\components\Ast;
 use App\components\storage\AbstractStorage;
 use App\components\transaction\Txn;
 
-class BeginPlan
+class BeginPlan implements PlanInterface
 {
     /** @var Ast */
     protected $ast;
@@ -15,12 +15,12 @@ class BeginPlan
     protected $storage;
 
     /**
-     * DeletePlan constructor.
+     * BeginPlan constructor.
      * @param Ast $ast
      * @param AbstractStorage $storage
-     * @throws \Exception
+     * @param int $txnId
      */
-    public function __construct(Ast $ast, AbstractStorage $storage)
+    public function __construct(Ast $ast, AbstractStorage $storage, int $txnId = 0)
     {
         $this->ast = $ast;
         $this->storage = $storage;

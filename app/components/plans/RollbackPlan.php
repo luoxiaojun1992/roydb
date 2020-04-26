@@ -6,7 +6,7 @@ use App\components\Ast;
 use App\components\storage\AbstractStorage;
 use App\components\transaction\Txn;
 
-class RollbackPlan
+class RollbackPlan implements PlanInterface
 {
     /** @var Ast */
     protected $ast;
@@ -14,16 +14,19 @@ class RollbackPlan
     /** @var AbstractStorage */
     protected $storage;
 
+    protected $txnId;
+
     /**
-     * DeletePlan constructor.
+     * RollbackPlan constructor.
      * @param Ast $ast
      * @param AbstractStorage $storage
-     * @throws \Exception
+     * @param int $txnId
      */
-    public function __construct(Ast $ast, AbstractStorage $storage)
+    public function __construct(Ast $ast, AbstractStorage $storage, int $txnId = 0)
     {
         $this->ast = $ast;
         $this->storage = $storage;
+        $this->txnId = $txnId;
     }
 
     /**
@@ -32,7 +35,6 @@ class RollbackPlan
      */
     public function execute()
     {
-        //todo
-        return Txn::fromTxnId($txnTs, $this->storage)->rollback();
+        return Txn::fromTxnId($this->txnId, $this->storage)->rollback();
     }
 }

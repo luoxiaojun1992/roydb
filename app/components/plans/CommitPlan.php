@@ -6,7 +6,7 @@ use App\components\Ast;
 use App\components\storage\AbstractStorage;
 use App\components\transaction\Txn;
 
-class CommitPlan
+class CommitPlan implements PlanInterface
 {
     /** @var Ast */
     protected $ast;
@@ -17,12 +17,12 @@ class CommitPlan
     protected $txnId;
 
     /**
-     * DeletePlan constructor.
+     * CommitPlan constructor.
      * @param Ast $ast
      * @param AbstractStorage $storage
-     * @throws \Exception
+     * @param int $txnId
      */
-    public function __construct(Ast $ast, AbstractStorage $storage, $txnId)
+    public function __construct(Ast $ast, AbstractStorage $storage, int $txnId = 0)
     {
         $this->ast = $ast;
         $this->storage = $storage;
@@ -35,7 +35,6 @@ class CommitPlan
      */
     public function execute()
     {
-        //todo
-        return Txn::fromTxnId($txnTs, $this->storage)->commit();
+        return Txn::fromTxnId($this->txnId, $this->storage)->commit();
     }
 }

@@ -10,7 +10,7 @@ use App\components\optimizers\RulesBasedOptimizer;
 use App\components\storage\AbstractStorage;
 use PHPSQLParser\PHPSQLCreator;
 
-class UpdatePlan
+class UpdatePlan implements PlanInterface
 {
     /** @var Ast */
     protected $ast;
@@ -26,16 +26,21 @@ class UpdatePlan
     protected $sets;
     protected $updateRow;
 
+    protected $txnId;
+
     /**
      * UpdatePlan constructor.
      * @param Ast $ast
      * @param AbstractStorage $storage
+     * @param int $txnId
      * @throws \Exception
      */
-    public function __construct(Ast $ast, AbstractStorage $storage)
+    public function __construct(Ast $ast, AbstractStorage $storage, int $txnId = 0)
     {
         $this->ast = $ast;
         $this->storage = $storage;
+        $this->txnId = $txnId;
+
         $this->extractSchemas();
         $this->extractSets();
     }

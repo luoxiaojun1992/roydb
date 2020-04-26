@@ -17,7 +17,7 @@ use App\components\udf\Aggregate;
 use App\components\udf\Math;
 use Co\Channel;
 
-class QueryPlan
+class QueryPlan implements PlanInterface
 {
     const JOIN_HANDLERS = [
         'JOIN' => 'innerJoinResultSet',
@@ -78,13 +78,22 @@ class QueryPlan
     protected $countAll;
     protected $usedColumns;
 
-    public function __construct(Ast $ast, AbstractStorage $storage)
+    protected $txnId;
+
+    /**
+     * QueryPlan constructor.
+     * @param Ast $ast
+     * @param AbstractStorage $storage
+     * @param int $txnId
+     */
+    public function __construct(Ast $ast, AbstractStorage $storage, int $txnId = 0)
     {
         $this->ast = $ast;
 
 //        var_dump($ast->getStmt());die;
 
         $this->storage = $storage;
+        $this->txnId = $txnId;
 
         $this->columns = $this->extractColumns($ast->getStmt()['SELECT']);
         $this->extractSchemas();
@@ -1224,24 +1233,6 @@ class QueryPlan
                     list($rowIndex, $filtered) = $udfCh->pop();
                     $row = $resultSet[$rowIndex];
                     if (is_array($filtered)) {
-                        $existedColumnNames = [];
-                        foreach ($columns as $existedColumnIndex => $existedColumn) {
-                            if (!$existedColumn->hasSubColumns()) {
-                                $existedColumnNames[] = $existedColumn->getValue();
-                            }
-                        }
-                        foreach ($udfResultColumns as $existedUdfColumnIndex => $existedUdfColumn) {
-                            if (!$existedUdfColumn->hasSubColumns()) {
-                                $existedColumnNames[] = $existedUdfColumn->getValue();
-                            }
-                        }
-                        foreach ($filtered as $filteredKey => $filteredValue) {
-                            if (!in_array($filteredKey, $existedColumnNames)) {
-                                $columns[] = (new Column())->setValue($filteredKey)
-                                    ->setType('colref');
-                            }
-                        }
-
                         if ($row instanceof Aggregation) {
                             $row->mergeAggregatedRow($filtered);
                         } else {

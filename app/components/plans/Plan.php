@@ -34,22 +34,25 @@ class Plan
     /** @var QueryPlan|InsertPlan */
     protected $executePlan;
 
-    public static function create(Ast $ast, AbstractStorage $storage)
+    protected $txnId;
+
+    public static function create(Ast $ast, AbstractStorage $storage, int $txnId = 0)
     {
-        return new static($ast, $storage);
+        return new static($ast, $storage, $txnId);
     }
 
-    public function __construct(Ast $ast, AbstractStorage $storage)
+    public function __construct(Ast $ast, AbstractStorage $storage, int $txnId = 0)
     {
         $this->ast = $ast;
         $this->storage = $storage;
+        $this->txnId = $txnId;
         $this->generatePlan();
     }
 
     protected function generatePlan()
     {
         $planClass = self::STMT_TYPE_PLAN_MAPPING[$this->ast->getStmtType()];
-        $this->executePlan = new $planClass($this->ast, $this->storage);
+        $this->executePlan = new $planClass($this->ast, $this->storage, $this->txnId);
     }
 
     /**
