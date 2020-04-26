@@ -6,6 +6,15 @@ use App\components\Ast;
 use App\components\consts\Stmt;
 use App\components\storage\AbstractStorage;
 
+/**
+ * Class Plan
+ *
+ * {@inheritDoc}
+ *
+ * In some situations, this class may composite several sub plans.
+ *
+ * @package App\components\plans
+ */
 class Plan
 {
     const STMT_TYPE_PLAN_MAPPING = [

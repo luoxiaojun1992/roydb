@@ -14,16 +14,19 @@ class CommitPlan
     /** @var AbstractStorage */
     protected $storage;
 
+    protected $txnId;
+
     /**
      * DeletePlan constructor.
      * @param Ast $ast
      * @param AbstractStorage $storage
      * @throws \Exception
      */
-    public function __construct(Ast $ast, AbstractStorage $storage)
+    public function __construct(Ast $ast, AbstractStorage $storage, $txnId)
     {
         $this->ast = $ast;
         $this->storage = $storage;
+        $this->txnId = $txnId;
     }
 
     /**
