@@ -1199,10 +1199,9 @@ class QueryPlan implements PlanInterface
                     break;
                 }
 
-                $resultSetCnt = count($resultSet);
                 $coroutineCount = 0;
                 $coroutineTotal = 3;
-                $udfCh = new Channel($resultSetCnt);
+                $udfCh = new Channel($coroutineTotal);
                 foreach ($resultSet as $rowIndex => $row) {
                     go(function () use (
                         $rowIndex, $udfName, $row, $resultSet, $column, $udfCh
