@@ -1142,8 +1142,9 @@ class QueryPlan implements PlanInterface
     protected function rowUdfFilter($udfName, $row, $resultSet, Column $column)
     {
         $udfParameters = [];
+
         foreach ($column->getSubColumns() as $subColumn) {
-            if ($subColumn->hasSubColumns()) {
+            if ($subColumn->isUdf()) {
                 $filtered = $this->rowUdfFilter($udfName, $row, $resultSet, $subColumn);
                 $udfParameters[] = (new Column())->setValue($filtered)
                     ->setType('const');
@@ -1375,9 +1376,10 @@ class QueryPlan implements PlanInterface
     }
 
     /**
-     * @param Column[] $columns
+     * @param $columns
      * @param $resultSet
      * @return mixed
+     * @throws \Exception
      */
     protected function resultSetColumnsFilter($columns, $resultSet)
     {
@@ -1389,7 +1391,25 @@ class QueryPlan implements PlanInterface
                     $columnAlias = $column->getAlias();
                     $columnAliasName = isset($columnAlias) ? $columnAlias['name'] : null;
                     $columnName= $columnAliasName ?? $column->getValue();
-                    $filteredRow[$columnName] = $row[$columnName] ?? null;
+
+                    if ($columnName !== '*') {
+                        $filteredRow[$columnName] = $row[$columnName] ?? null;
+                    } else {
+                        foreach ($this->getSchemas() as $schema) {
+                            $table = $schema['table'];
+
+                            $schemaMeta = $this->storage->getSchemaMetaData($table);
+                            if (!$schemaMeta) {
+                                throw new \Exception('Schema ' . $table . ' not exists');
+                            }
+
+                            $columnsMeta = $schemaMeta['columns'];
+                            foreach ($columnsMeta as $columnMeta) {
+                                $metaColumnName = $columnMeta['name'];
+                                $filteredRow[$metaColumnName] = $row[$metaColumnName] ?? null;
+                            }
+                        }
+                    }
                 }
             }
 
