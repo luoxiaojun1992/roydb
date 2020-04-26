@@ -2,14 +2,15 @@
 
 namespace App\components\transaction;
 
+use SwFwLess\facades\etcd\Etcd;
+
 class Lock
 {
     public static function txnLock(Txn $txn, $lockKey)
     {
-        //todo add txn id to lock info
         $result = \SwFwLess\facades\etcd\Lock::lock($lockKey, 0, true);
         if (!$result) {
-            $txnTs = \SwFwLess\facades\etcd\Lock::get($lockKey);
+            $txnTs = Etcd::get('lock_info:' . $lockKey);
             $result = intval($txnTs) === $txn->getTs();
         }
 
