@@ -1041,7 +1041,7 @@ class QueryPlan implements PlanInterface
             $newAggregation->setDimension($oldDimension);
             $newAggregation->addDimension($dimension);
             $newAggregation->setRows($rows);
-            $newAggregation->setAggregatedRow($rows[0] ?? [])
+            $newAggregation->setAggregatedRow($rows[0] ?? []);
             $aggregation[] = $newAggregation;
         }
 
