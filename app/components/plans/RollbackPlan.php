@@ -6,7 +6,7 @@ use App\components\Ast;
 use App\components\storage\AbstractStorage;
 use App\components\transaction\Txn;
 
-class BeginPlan
+class RollbackPlan
 {
     /** @var Ast */
     protected $ast;
@@ -32,6 +32,7 @@ class BeginPlan
      */
     public function execute()
     {
-        return Txn::create($this->storage)->begin();
+        //todo
+        return Txn::fromTxnId($txnTs, $this->storage)->rollback();
     }
 }

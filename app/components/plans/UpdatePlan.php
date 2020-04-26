@@ -12,8 +12,6 @@ use PHPSQLParser\PHPSQLCreator;
 
 class UpdatePlan
 {
-    //todo
-
     /** @var Ast */
     protected $ast;
 
