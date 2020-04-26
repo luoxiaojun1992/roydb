@@ -1149,30 +1149,10 @@ class QueryPlan implements PlanInterface
                 $udfParameters[] = (new Column())->setValue($filtered)
                     ->setType('const');
             } else {
-                $subColumnValue = $subColumn->getValue();
-                $subColumnType = $subColumn->getType();
-                if ($subColumnType === 'colref') {
-                    if (in_array($udfName, UDF::AGGREGATE_UDF)) {
-                        $udfParameters[] = (new Column())->setValue($subColumnValue)
-                            ->setType('colref');
-                    } else {
-                        if ($subColumnValue !== '*') {
-                            if ($row instanceof Aggregation) {
-                                $udfParameters[] = (new Column())->setValue($subColumnValue)
-                                    ->setType('colref');
-                            } else {
-                                $udfParameters[] = (new Column())->setValue($row[$subColumnValue])
-                                    ->setType('const');
-                            }
-                        } else {
-                            $udfParameters[] = (new Column())->setValue('*')
-                                ->setType('colref');
-                        }
-                    }
-                } else {
-                    $udfParameters[] = (new Column())->setValue($subColumnValue)
-                        ->setType($subColumnType);
-                }
+                $udfParameters[] = (new Column())->setValue($subColumn->getValue())
+                    ->setType($subColumn->getType())
+                    ->setSubColumns($subColumn->getSubColumns())
+                    ->setAlias($subColumn->getAlias());
             }
         }
 
