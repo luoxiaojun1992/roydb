@@ -1334,42 +1334,64 @@ class QueryPlan implements PlanInterface
         return $resultSet;
     }
 
+    /**
+     * @param $columns
+     * @param $resultSet
+     * @return mixed
+     * @throws \Exception
+     */
     protected function resultSetColumnsTransform($columns, $resultSet)
     {
-        /** @var Column[] $constColumns */
-        $constColumns = [];
-        /** @var Column[] $aliasColumns */
-        $aliasColumns = [];
-        foreach ($columns as $column) {
-            if (!$column->hasSubColumns()) {
-                $columnAlias = $column->getAlias();
-                if (!is_null($columnAlias)) {
-                    $aliasColumns[] = $column;
-                }
-                if ($column->getType() === 'const') {
-                    $constColumns[] = $column;
-                }
-            }
-        }
-
         foreach ($resultSet as $i => $row) {
-            $transformedRow = [];
-            foreach ($constColumns as $constColumn) {
-                $constColumnValue = $constColumn->getValue();
-                $transformedRow[$constColumnValue] = $constColumnValue;
-                $row[$constColumnValue] = $constColumnValue;
-            }
-            foreach ($aliasColumns as $aliasColumn) {
-                $aliasColumnName = $aliasColumn->getAlias()['name'];
-                $originColumnName = $aliasColumn->getValue();
-                $transformedRow[$aliasColumnName] = $row[$originColumnName];
-            }
-            foreach ($row as $key => $value) {
-                if (!array_key_exists($key, $transformedRow)) {
-                    $transformedRow[$key] = $value;
+            $filteredRow = [];
+
+            foreach ($columns as $column) {
+                if (!$column->hasSubColumns()) {
+                    $columnType = $column->getType();
+                    $columnAlias = $column->getAlias();
+                    $columnAliasName = isset($columnAlias) ? $columnAlias['name'] : null;
+                    $originColumnName = $column->getValue();
+                    $columnName= $columnAliasName ?? $originColumnName;
+
+                    if ($columnType === 'const') {
+                        $filteredRow[$columnName] = $originColumnName;
+                    } elseif ($columnType === 'colref') {
+                        if ($columnName !== '*') {
+                            $filteredRow[$columnName] = $row[$originColumnName] ?? null;
+                        } else {
+                            $schemas = $this->getSchemas();
+                            $schemasCount = count($schemas);
+                            foreach ($schemas as $schema) {
+                                $table = $schema['table'];
+
+                                $schemaMeta = $this->storage->getSchemaMetaData($table);
+                                if (!$schemaMeta) {
+                                    throw new \Exception('Schema ' . $table . ' not exists');
+                                }
+
+                                $columnsMeta = $schemaMeta['columns'];
+                                foreach ($columnsMeta as $columnMeta) {
+                                    $metaColumnName = $columnMeta['name'];
+                                    if ($schemasCount > 1) {
+                                        $filteredRow[$metaColumnName] = $filteredRow[$table . '.' . $metaColumnName] =
+                                            $row[$table . '.' . $metaColumnName] ?? null;
+                                    } else {
+                                        $filteredRow[$metaColumnName] = $row[$table . '.' . $metaColumnName] ?? null;
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
             }
-            $resultSet[$i] = $transformedRow;
+
+            foreach ($row as $k => $v) {
+                if (!array_key_exists($k, $filteredRow)) {
+                    $filteredRow[$k] = $v;
+                }
+            }
+
+            $resultSet[$i] = $filteredRow;
         }
 
         return $resultSet;
@@ -1390,12 +1412,13 @@ class QueryPlan implements PlanInterface
                 if (!$column->hasSubColumns()) {
                     $columnAlias = $column->getAlias();
                     $columnAliasName = isset($columnAlias) ? $columnAlias['name'] : null;
-                    $columnName= $columnAliasName ?? $column->getValue();
+                    $originColumnName = $column->getValue();
+                    $columnName= $columnAliasName ?? $originColumnName;
 
-                    if ($columnName !== '*') {
-                        $filteredRow[$columnName] = $row[$columnName] ?? null;
-                    } else {
-                        foreach ($this->getSchemas() as $schema) {
+                    if ($columnName === '*') {
+                        $schemas = $this->getSchemas();
+                        $schemasCount = count($schemas);
+                        foreach ($schemas as $schema) {
                             $table = $schema['table'];
 
                             $schemaMeta = $this->storage->getSchemaMetaData($table);
@@ -1406,9 +1429,16 @@ class QueryPlan implements PlanInterface
                             $columnsMeta = $schemaMeta['columns'];
                             foreach ($columnsMeta as $columnMeta) {
                                 $metaColumnName = $columnMeta['name'];
-                                $filteredRow[$metaColumnName] = $row[$metaColumnName] ?? null;
+                                if ($schemasCount > 1) {
+                                    $filteredRow[$metaColumnName] = $filteredRow[$table . '.' . $metaColumnName] =
+                                        $row[$table . '.' . $metaColumnName] ?? null;
+                                } else {
+                                    $filteredRow[$metaColumnName] = $row[$table . '.' . $metaColumnName] ?? null;
+                                }
                             }
                         }
+                    } else {
+                        $filteredRow[$columnName] = $row[$columnName] ?? null;
                     }
                 }
             }
