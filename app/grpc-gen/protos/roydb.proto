@@ -56,3 +56,33 @@ message UpdateRequest {
 message UpdateResponse {
     int64 affectedRows = 1;
 }
+
+service Txn {
+    rpc Begin (BeginRequest) returns (BeginResponse) {}
+    rpc Commit (CommitRequest) returns (CommitResponse) {}
+    rpc Rollback (RollbackRequest) returns (RollbackResponse) {}
+}
+
+message BeginRequest {
+
+}
+
+message BeginResponse {
+
+}
+
+message CommitRequest {
+
+}
+
+message CommitResponse {
+
+}
+
+message RollbackRequest {
+
+}
+
+message RollbackResponse {
+
+}
