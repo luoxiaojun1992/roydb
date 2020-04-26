@@ -1041,6 +1041,7 @@ class QueryPlan implements PlanInterface
             $newAggregation->setDimension($oldDimension);
             $newAggregation->addDimension($dimension);
             $newAggregation->setRows($rows);
+            $newAggregation->setAggregatedRow($rows[0] ?? [])
             $aggregation[] = $newAggregation;
         }
 
@@ -1380,34 +1381,19 @@ class QueryPlan implements PlanInterface
      */
     protected function resultSetColumnsFilter($columns, $resultSet)
     {
-        $columnNames = [];
-        /** @var Column[] $aliasColumns */
-        $aliasColumns = [];
-        foreach ($columns as $column) {
-            if (!$column->hasSubColumns()) {
-                $columnAlias = $column->getAlias();
-                $columnAliasName = isset($columnAlias) ? $columnAlias['name'] : null;
-                $columnNames[] = $columnAliasName ?? $column->getValue();
-                if (!is_null($columnAlias)) {
-                    $aliasColumns[] = $column;
-                }
-            }
-        }
         foreach ($resultSet as $i => $row) {
-//            foreach ($aliasColumns as $aliasColumn) {
-//                $originColumnName = $aliasColumn->getValue();
-//                if ($originColumnName !== ($aliasColumn->getAlias()['name'])) {
-//                    unset($row[$originColumnName]);
-//                }
-//            }
-            if (!in_array('*', $columnNames)) {
-                foreach ($row as $k => $v) {
-                    if (!in_array($k, $columnNames)) {
-                        unset($row[$k]);
-                    }
+            $filteredRow = [];
+
+            foreach ($columns as $column) {
+                if (!$column->hasSubColumns()) {
+                    $columnAlias = $column->getAlias();
+                    $columnAliasName = isset($columnAlias) ? $columnAlias['name'] : null;
+                    $columnName= $columnAliasName ?? $column->getValue();
+                    $filteredRow[$columnName] = $row[$columnName] ?? null;
                 }
             }
-            $resultSet[$i] = $row;
+
+            $resultSet[$i] = $filteredRow;
         }
 
         return $resultSet;
