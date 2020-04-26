@@ -1185,8 +1185,8 @@ class QueryPlan implements PlanInterface
             if ($column->isUdf()) {
                 $udfName = $column->getValue();
                 $udfResultColumnName = $this->getUdfColumnName($column);
-                $udfResultColumn = new Column();
-                $udfResultColumn->setType('colref')
+                $newUdfResultColumn = new Column();
+                $newUdfResultColumn->setType('colref')
                     ->setValue($udfResultColumnName)
                     ->setAlias($column->getAlias());
 
@@ -1200,6 +1200,8 @@ class QueryPlan implements PlanInterface
                 }
 
                 $resultSetCnt = count($resultSet);
+                $coroutineCount = 0;
+                $coroutineTotal = 3;
                 $udfCh = new Channel($resultSetCnt);
                 foreach ($resultSet as $rowIndex => $row) {
                     go(function () use (
@@ -1207,30 +1209,101 @@ class QueryPlan implements PlanInterface
                     ) {
                         $udfCh->push([$rowIndex, $this->rowUdfFilter($udfName, $row, $resultSet, $column)]);
                     });
-                }
-                for ($udfCoId = 0; $udfCoId < $resultSetCnt; ++$udfCoId) {
-                    list($rowIndex, $filtered) = $udfCh->pop();
-                    $row = $resultSet[$rowIndex];
-                    if (is_array($filtered)) {
-                        if ($row instanceof Aggregation) {
-                            $row->mergeAggregatedRow($filtered);
-                        } else {
-                            $row = $row + $filtered;
-                            $resultSet[$rowIndex] = $row;
+
+                    ++$coroutineCount;
+                    if ($coroutineCount === $coroutineTotal) {
+                        for ($udfCoId = 0; $udfCoId < $coroutineTotal; ++$udfCoId) {
+                            list($rowIndex, $filtered) = $udfCh->pop();
+                            $row = $resultSet[$rowIndex];
+                            if (is_array($filtered)) {
+                                foreach ($filtered as $filteredKey => $filteredValue) {
+                                    $udfArrResultColumn = (new Column())->setValue($filteredKey)
+                                        ->setType('colref');
+                                    $duplicatedColumn = false;
+                                    foreach ($columns as $column) {
+                                        if ($column->equals($udfArrResultColumn)) {
+                                            $duplicatedColumn = true;
+                                            break;
+                                        }
+                                    }
+                                    foreach ($udfResultColumns as $udfResultColumn) {
+                                        if ($udfResultColumn->equals($udfArrResultColumn)) {
+                                            $duplicatedColumn = true;
+                                            break;
+                                        }
+                                    }
+                                    if (!$duplicatedColumn) {
+                                        $udfResultColumns[] = $udfArrResultColumn;
+                                    }
+                                }
+
+                                if ($row instanceof Aggregation) {
+                                    $row->mergeAggregatedRow($filtered);
+                                } else {
+                                    $row = $row + $filtered;
+                                    $resultSet[$rowIndex] = $row;
+                                }
+                                $newUdfResultColumn = null;
+                            } else {
+                                if ($row instanceof Aggregation) {
+                                    $row->setOneAggregatedRow($udfResultColumnName, $filtered);
+                                } else {
+                                    $row[$udfResultColumnName] = $filtered;
+                                    $resultSet[$rowIndex] = $row;
+                                }
+                            }
                         }
-                        $udfResultColumn = null;
-                    } else {
-                        if ($row instanceof Aggregation) {
-                            $row->setOneAggregatedRow($udfResultColumnName, $filtered);
+
+                        $coroutineCount = 0;
+                    }
+                }
+
+                if ($coroutineCount > 0) {
+                    for ($udfCoId = 0; $udfCoId < $coroutineCount; ++$udfCoId) {
+                        list($rowIndex, $filtered) = $udfCh->pop();
+                        $row = $resultSet[$rowIndex];
+                        if (is_array($filtered)) {
+                            foreach ($filtered as $filteredKey => $filteredValue) {
+                                $udfArrResultColumn = (new Column())->setValue($filteredKey)
+                                    ->setType('colref');
+                                $duplicatedColumn = false;
+                                foreach ($columns as $column) {
+                                    if ($column->equals($udfArrResultColumn)) {
+                                        $duplicatedColumn = true;
+                                        break;
+                                    }
+                                }
+                                foreach ($udfResultColumns as $udfResultColumn) {
+                                    if ($udfResultColumn->equals($udfArrResultColumn)) {
+                                        $duplicatedColumn = true;
+                                        break;
+                                    }
+                                }
+                                if (!$duplicatedColumn) {
+                                    $udfResultColumns[] = $udfArrResultColumn;
+                                }
+                            }
+
+                            if ($row instanceof Aggregation) {
+                                $row->mergeAggregatedRow($filtered);
+                            } else {
+                                $row = $row + $filtered;
+                                $resultSet[$rowIndex] = $row;
+                            }
+                            $newUdfResultColumn = null;
                         } else {
-                            $row[$udfResultColumnName] = $filtered;
-                            $resultSet[$rowIndex] = $row;
+                            if ($row instanceof Aggregation) {
+                                $row->setOneAggregatedRow($udfResultColumnName, $filtered);
+                            } else {
+                                $row[$udfResultColumnName] = $filtered;
+                                $resultSet[$rowIndex] = $row;
+                            }
                         }
                     }
                 }
 
-                if (!is_null($udfResultColumn)) {
-                    $udfResultColumns[] = $udfResultColumn;
+                if (!is_null($newUdfResultColumn)) {
+                    $udfResultColumns[] = $newUdfResultColumn;
                 }
             }
         }

@@ -116,4 +116,36 @@ class Column
     {
         return isset($this->subColumns[0]);
     }
+
+    /**
+     * @param Column $column
+     * @return bool
+     */
+    public function equals(self $column)
+    {
+        if ($column->getType() !== $this->getType()) {
+            return false;
+        }
+
+        if ($column->getValue() !== $this->getValue()) {
+            return false;
+        }
+
+        if ($column->getAlias() !== $this->getAlias()) {
+            return false;
+        }
+
+        $subColumns = $this->getSubColumns();
+        foreach ($column->getSubColumns() as $i => $subColumn) {
+            if (!isset($subColumns[$i])) {
+                return false;
+            }
+
+            if (!$subColumns[$i]->equals($subColumn)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
 }
