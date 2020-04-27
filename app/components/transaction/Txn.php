@@ -445,7 +445,7 @@ class Txn
         }
 
         if ($continue) {
-            $commitTxnIdList = $this->getCommitTxnSnapshot()->getIdList();
+            $commitTxnIdList = $this->getCommitTxnSnapshot()->getIdList()->iterator();
             $toDeleteTxn = true;
             foreach ($commitTxnIdList as $commitTxnId) {
                 if ($commitTxnId === $txnTs) {
@@ -623,6 +623,7 @@ class Txn
 
         foreach ($txnGCSnapshot->getIdList()->iterator() as $txnId) {
             $txn = self::fromTxnId($txnId, $storage);
+            $txn->commit();
         }
         //todo snapshot 不加锁，txn加锁，优化
     }
