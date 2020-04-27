@@ -4,7 +4,8 @@ namespace App\components\metric;
 
 use App\components\storage\AbstractStorage;
 use App\components\storage\StorageFactory;
-use SwFwLess\facades\RateLimit;
+use SwFwLess\facades\etcd\Etcd;
+use SwFwLess\facades\etcd\RateLimit;
 use SwFwLess\facades\RedisPool;
 
 class Cardinality
@@ -33,19 +34,12 @@ class Cardinality
      */
     protected function getSampleInterval()
     {
-        $redis = RedisPool::pick();
-        try {
-            $interval = intval($redis->get(self::INTERVAL_CACHE_KEY));
-            if ($interval <= 0) {
-                $interval = self::INITIAL_INTERVAL;
-                $this->setSampleInterval($interval);
-            }
-            return $interval;
-        } catch (\Throwable $e) {
-            throw $e;
-        } finally {
-            RedisPool::release($redis);
+        $interval = intval(Etcd::get(self::INTERVAL_CACHE_KEY));
+        if ($interval <= 0) {
+            $interval = self::INITIAL_INTERVAL;
+            $this->setSampleInterval($interval);
         }
+        return $interval;
     }
 
     /**
@@ -54,14 +48,7 @@ class Cardinality
      */
     protected function setSampleInterval($interval)
     {
-        $redis = RedisPool::pick();
-        try {
-            $redis->set(self::INTERVAL_CACHE_KEY, $interval);
-        } catch (\Throwable $e) {
-            throw $e;
-        } finally {
-            RedisPool::release($redis);
-        }
+        Etcd::put(self::INTERVAL_CACHE_KEY, $interval);
     }
 
     /**

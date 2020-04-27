@@ -608,7 +608,7 @@ class Txn
         }
 
         foreach ($txnSnapshot->getIdList()->iterator() as $txnId) {
-
+            $txn = self::fromTxnId($txnId, $storage);
         }
         //todo snapshot 不加锁，txn加锁，优化
     }
@@ -622,8 +622,8 @@ class Txn
         }
 
         foreach ($txnGCSnapshot->getIdList()->iterator() as $txnId) {
-
+            $txn = self::fromTxnId($txnId, $storage);
         }
-        //todo
+        //todo snapshot 不加锁，txn加锁，优化
     }
 }
