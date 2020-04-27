@@ -388,7 +388,7 @@ class Txn
             $txnSnapShot = new Snapshot();
         }
 
-        if (!in_array($txnTs, $txnSnapShot->getIdList())) {
+        if (!$txnSnapShot->getIdList()->has($txnTs)) {
             $txnSnapShot->addIdList([$txnTs]);
             $continue = $this->storage->saveTxnSnapShot($txnSnapShot);
         }
@@ -464,13 +464,13 @@ class Txn
                 $txnGcSnapShot = new Snapshot();
             }
             if (!$toDeleteTxn) { //txn cannot be deleted, because other txns using the undo log of this
-                if (!in_array($txnTs, $txnGcSnapShot->getIdList())) {
+                if (!$txnGcSnapShot->getIdList()->has($txnTs)) {
                     $txnGcSnapShot->addIdList([$txnTs]);
                     $continue = $this->storage->saveTxnGCSnapShot($txnGcSnapShot);
                 }
             } else {
                 $continue = $this->storage->delTxn($txnTs);
-                if (in_array($txnTs, $txnGcSnapShot->getIdList())) {
+                if ($txnGcSnapShot->getIdList()->has($txnTs)) {
                     if ($txnGcSnapShot->delIdList([$txnTs])) {
                         $continue = $this->storage->saveTxnGCSnapShot($txnGcSnapShot);
                     } else {
@@ -481,7 +481,7 @@ class Txn
         }
 
         if ($continue) {
-            if (in_array($txnTs, $currentTxnSnapShot->getIdList())) {
+            if ($currentTxnSnapShot->getIdList()->has($txnTs)) {
                 $currentTxnSnapShot->delIdList([$txnTs]);
                 return $this->storage->saveTxnSnapShot($currentTxnSnapShot);
             }
@@ -582,12 +582,10 @@ class Txn
             ->setCommitTs($txnArr['commit_ts'])
             ->setLockKeys($txnArr['lock_keys'])
             ->setTxnSnapshot(
-                (new Snapshot())->setIdList($txnArr['txn_snapshot']['id_list'])
-                    ->setIdListGaps($txnArr['txn_snapshot']['id_list_gaps'])
+                Snapshot::createFromIdSlots($txnArr['txn_snapshot']['id_slots'])
             )
             ->setCommitTxnSnapshot(
-                (new Snapshot())->setIdList($txnArr['commit_txn_snapshot']['id_list'])
-                    ->setIdListGaps($txnArr['commit_txn_snapshot']['id_list_gaps'])
+                Snapshot::createFromIdSlots($txnArr['commit_txn_snapshot']['id_slots'])
             )
             ->setStorage($storage);
     }
@@ -609,7 +607,7 @@ class Txn
             return;
         }
 
-        foreach ($txnSnapshot->getIdList() as $txnId) {
+        foreach ($txnSnapshot->getIdList()->iterator() as $txnId) {
 
         }
         //todo snapshot 不加锁，txn加锁，优化
@@ -623,7 +621,7 @@ class Txn
             return;
         }
 
-        foreach ($txnGCSnapshot->getIdList() as $txnId) {
+        foreach ($txnGCSnapshot->getIdList()->iterator() as $txnId) {
 
         }
         //todo

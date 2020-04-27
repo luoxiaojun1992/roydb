@@ -2,16 +2,19 @@
 
 namespace App\components\transaction;
 
+use SwFwLess\components\utils\bitmap\bitarray\BitIntArr;
+
 class Snapshot
 {
-    protected array $idList = [];
+    /** @var BitIntArr $idList */
+    protected $idList;
 
-    protected array $idListGaps = [];
+    public static function createFromIdSlots($idSlots)
+    {
+        return (new static())->setIdSlots($idSlots);
+    }
 
-    /**
-     * @return array
-     */
-    public function getIdList(): array
+    public function getIdList()
     {
         return $this->idList;
     }
@@ -22,7 +25,16 @@ class Snapshot
      */
     public function setIdList(array $idList): self
     {
-        $this->idList = $idList;
+        $this->idList = new BitIntArr();
+        foreach ($idList as $id) {
+            $this->idList->add($id);
+        }
+        return $this;
+    }
+
+    public function setIdSlots(array $idSlots): self
+    {
+        $this->idList = BitIntArr::createFromSlots($idSlots);
         return $this;
     }
 
@@ -32,9 +44,14 @@ class Snapshot
      */
     public function addIdList(array $idList): self
     {
-        //todo optimize, use bit
+        if (is_null($this->idList)) {
+             $this->idList = new BitIntArr();
+        }
 
-        $this->idList = array_merge($this->idList, $idList);
+        foreach ($idList as $id) {
+            $this->idList->add($id);
+        }
+
         return $this;
     }
 
@@ -44,35 +61,15 @@ class Snapshot
      */
     public function delIdList(array $idList): self
     {
-        $this->idList = array_diff($this->idList, $idList);
-        return $this;
-    }
+        if (is_null($this->idList)) {
+            $this->idList = new BitIntArr();
+            return $this;
+        }
 
-    /**
-     * @return array
-     */
-    public function getIdListGaps(): array
-    {
-        return $this->idListGaps;
-    }
+        foreach ($idList as $id) {
+            $this->idList->del($id);
+        }
 
-    /**
-     * @param array $idListGaps
-     * @return $this
-     */
-    public function setIdListGaps(array $idListGaps): self
-    {
-        $this->idListGaps = $idListGaps;
-        return $this;
-    }
-
-    /**
-     * @param array $idListGaps
-     * @return $this
-     */
-    public function addIdListGaps(array $idListGaps): self
-    {
-        $this->idListGaps = array_merge($this->idListGaps, $idListGaps);
         return $this;
     }
 
@@ -82,8 +79,7 @@ class Snapshot
     public function toArray()
     {
         return [
-            'id_list' => $this->getIdList(),
-            'id_list_gaps' => $this->getIdListGaps(),
+            'id_slots' => $this->getIdList()->getSlots(),
         ];
     }
 }
