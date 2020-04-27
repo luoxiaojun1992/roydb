@@ -609,6 +609,13 @@ class Txn
 
         foreach ($txnSnapshot->getIdList()->iterator() as $txnId) {
             $txn = self::fromTxnId($txnId, $storage);
+            if ($txn->isCommitted()) {
+                $txn->commit();
+            } elseif ($txn->isCanceled()) {
+                $txn->rollback();
+            } elseif ($txn->isActive()) {
+                //todo
+            }
         }
         //todo snapshot 不加锁，txn加锁，优化
     }
