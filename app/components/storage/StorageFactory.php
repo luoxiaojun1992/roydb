@@ -2,7 +2,7 @@
 
 namespace App\components\storage;
 
-class StorageBuilder
+class StorageFactory
 {
     /**
      * @return AbstractStorage

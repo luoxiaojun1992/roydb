@@ -5,7 +5,7 @@ namespace App\components\transaction;
 use App\components\consts\Log as LogConst;
 use App\components\consts\Txn as TxnConst;
 use App\components\storage\AbstractStorage;
-use App\components\storage\StorageBuilder;
+use App\components\storage\StorageFactory;
 use App\components\transaction\log\AbstractLog;
 use App\components\transaction\log\RedoLog;
 use App\components\transaction\log\UndoLog;
@@ -603,7 +603,7 @@ class Txn
 
     public static function compactTxnSnapshot()
     {
-        $storage = StorageBuilder::create();
+        $storage = StorageFactory::create();
         $txnSnapshot = $storage->getTxnSnapShot();
         if (is_null($txnSnapshot)) {
             return;
@@ -617,7 +617,7 @@ class Txn
 
     public static function compactTxnGCSnapshot()
     {
-        $storage = StorageBuilder::create();
+        $storage = StorageFactory::create();
         $txnGCSnapshot = $storage->getTxnGCSnapShot();
         if (is_null($txnGCSnapshot)) {
             return;
