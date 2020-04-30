@@ -86,3 +86,15 @@ message RollbackRequest {
 message RollbackResponse {
 
 }
+
+service Stat {
+    rpc EstIndexCard (EstIndexCardRequest) returns (EstIndexCardResponse);
+}
+
+message EstIndexCardRequest {
+
+}
+
+message EstIndexCardResponse {
+
+}
