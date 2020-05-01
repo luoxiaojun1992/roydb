@@ -68,23 +68,23 @@ message BeginRequest {
 }
 
 message BeginResponse {
-
+    int64 ts = 1;
 }
 
 message CommitRequest {
-
+    int64 ts = 1;
 }
 
 message CommitResponse {
-
+    bool result = 1;
 }
 
 message RollbackRequest {
-
+    int64 ts = 1;
 }
 
 message RollbackResponse {
-
+    bool result = 1;
 }
 
 service Stat {
@@ -92,9 +92,10 @@ service Stat {
 }
 
 message EstIndexCardRequest {
-
+    string schema = 1;
+    string index = 2;
 }
 
 message EstIndexCardResponse {
-
+    bool accepted = 1;
 }
