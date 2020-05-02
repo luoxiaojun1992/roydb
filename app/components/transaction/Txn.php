@@ -66,12 +66,20 @@ class Txn
     }
 
     /**
+     * @return int
+     */
+    public function countRedoLogs(): int
+    {
+        return count($this->redoLogs);
+    }
+
+    /**
      * @return RedoLog|null
      */
     public function getLastRedoLog(): ?RedoLog
     {
-        $redoLogs = $this->getRedoLogs();
-        return end($redoLogs) ?: null;
+        $redoLogsCount = $this->countRedoLogs();
+        return ($redoLogsCount > 0) ? $this->redoLogs[$redoLogsCount - 1] : null;
     }
 
     /**
@@ -103,12 +111,20 @@ class Txn
     }
 
     /**
+     * @return int
+     */
+    public function countUndoLogs(): int
+    {
+        return count($this->undoLogs);
+    }
+
+    /**
      * @return UndoLog|null
      */
     public function getLastUndoLog(): ?UndoLog
     {
-        $undoLogs = $this->getUndoLogs();
-        return end($undoLogs) ?: null;
+        $undoLogsCount = $this->countUndoLogs();
+        return ($undoLogsCount > 0) ? $this->undoLogs[$undoLogsCount - 1] : null;
     }
 
     /**
@@ -614,7 +630,11 @@ class Txn
             } elseif ($txn->isCanceled()) {
                 $txn->rollback();
             } elseif ($txn->isActive()) {
-                //todo
+                $lastRedoLog = $txn->getLastRedoLog();
+                //todo txn timeout configuration
+                if ($lastRedoLog->getTs() < strtotime('-10 minutes')) {
+                    $txn->rollback();
+                }
             }
         }
         //todo snapshot 不加锁，txn加锁，优化
