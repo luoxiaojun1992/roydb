@@ -38,6 +38,20 @@ abstract class KvStorage extends AbstractStorage
 
     abstract protected function dataSchemaDel($btree, $indexName, $id);
 
+    abstract protected function metaTxnGet($btree, $txnId);
+
+    abstract protected function metaTxnSet($btree, $txnId, $txnJson);
+
+    abstract protected function metaTxnDel($btree, $txnId);
+
+    abstract protected function metaTxnSnapshotGet($btree);
+
+    abstract protected function metaTxnSnapshotSet($btree, Snapshot $snapshot);
+
+    abstract protected function metaTxnGCSnapshotGet($btree);
+
+    abstract protected function metaTxnGCSnapshotSet($btree, Snapshot $snapshot);
+
     /**
      * @param $schema
      * @return mixed|null

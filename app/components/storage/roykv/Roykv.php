@@ -3,6 +3,7 @@
 namespace App\components\storage\roykv;
 
 use App\components\storage\KvStorage;
+use App\components\transaction\Snapshot;
 use App\services\roykv\KvClient;
 use Roykv\CountRequest;
 use Roykv\DelRequest;
@@ -214,5 +215,40 @@ class Roykv extends KvStorage
         }
 
         return false;
+    }
+
+    protected function metaTxnGet($btree, $txnId)
+    {
+        // TODO: Implement metaTxnGet() method.
+    }
+
+    protected function metaTxnSet($btree, $txnId, $txnJson)
+    {
+        // TODO: Implement metaTxnSet() method.
+    }
+
+    protected function metaTxnDel($btree, $txnId)
+    {
+        // TODO: Implement metaTxnDel() method.
+    }
+
+    protected function metaTxnSnapshotGet($btree)
+    {
+        // TODO: Implement metaTxnSnapshotGet() method.
+    }
+
+    protected function metaTxnSnapshotSet($btree, Snapshot $snapshot)
+    {
+        // TODO: Implement metaTxnSnapshotSet() method.
+    }
+
+    protected function metaTxnGCSnapshotGet($btree)
+    {
+        // TODO: Implement metaTxnGCSnapshotGet() method.
+    }
+
+    protected function metaTxnGCSnapshotSet($btree, Snapshot $snapshot)
+    {
+        // TODO: Implement metaTxnGCSnapshotSet() method.
     }
 }
