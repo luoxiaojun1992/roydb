@@ -656,10 +656,11 @@ abstract class KvStorage extends AbstractStorage
 
         if (strpos($colName, '.')) {
             list($operandSchema, $colName) = explode('.', $colName);
-            if (($operandSchema !== $schema) ||
-                (!in_array($colName, $schemaColumns))
-            ) {
+            if ($operandSchema !== $schema) {
                 return false;
+            }
+            if (!in_array($colName, $schemaColumns)) {
+                throw new \Exception($colName . ' is not column of ' . $schema);
             }
         } else {
             if (!in_array($colName, $schemaColumns)) {
