@@ -1149,7 +1149,7 @@ class QueryPlan implements PlanInterface
                 $udfParameters[] = (new Column())->setValue($filtered)
                     ->setType('const');
             } else {
-                $udfParameters[] = Column::cloneFromColumn($column);
+                $udfParameters[] = Column::cloneFromColumn($subColumn);
             }
         }
 
@@ -1190,15 +1190,6 @@ class QueryPlan implements PlanInterface
                     ->setValue($udfResultColumnName)
                     ->setAlias($column->getAlias());
 
-                foreach ($resultSet as $rowIndex => $row) {
-                    if (in_array($udfName, UDF::AGGREGATE_UDF)) {
-                        if ((!is_object($row)) || (!($row instanceof Aggregation))) {
-                            $resultSet = [(new Aggregation())->setRows($resultSet)];
-                        }
-                    }
-                    break;
-                }
-
                 $coroutineCount = 0;
                 $coroutineTotal = 3;
                 $udfCh = new Channel($coroutineTotal);
@@ -1215,27 +1206,6 @@ class QueryPlan implements PlanInterface
                             list($rowIndex, $filtered) = $udfCh->pop();
                             $row = $resultSet[$rowIndex];
                             if (is_array($filtered)) {
-                                foreach ($filtered as $filteredKey => $filteredValue) {
-                                    $udfArrResultColumn = (new Column())->setValue($filteredKey)
-                                        ->setType('colref');
-                                    $duplicatedColumn = false;
-                                    foreach ($columns as $column) {
-                                        if ($column->equals($udfArrResultColumn)) {
-                                            $duplicatedColumn = true;
-                                            break;
-                                        }
-                                    }
-                                    foreach ($udfResultColumns as $udfResultColumn) {
-                                        if ($udfResultColumn->equals($udfArrResultColumn)) {
-                                            $duplicatedColumn = true;
-                                            break;
-                                        }
-                                    }
-                                    if (!$duplicatedColumn) {
-                                        $udfResultColumns[] = $udfArrResultColumn;
-                                    }
-                                }
-
                                 if ($row instanceof Aggregation) {
                                     $row->mergeAggregatedRow($filtered);
                                 } else {
@@ -1262,27 +1232,6 @@ class QueryPlan implements PlanInterface
                         list($rowIndex, $filtered) = $udfCh->pop();
                         $row = $resultSet[$rowIndex];
                         if (is_array($filtered)) {
-                            foreach ($filtered as $filteredKey => $filteredValue) {
-                                $udfArrResultColumn = (new Column())->setValue($filteredKey)
-                                    ->setType('colref');
-                                $duplicatedColumn = false;
-                                foreach ($columns as $column) {
-                                    if ($column->equals($udfArrResultColumn)) {
-                                        $duplicatedColumn = true;
-                                        break;
-                                    }
-                                }
-                                foreach ($udfResultColumns as $udfResultColumn) {
-                                    if ($udfResultColumn->equals($udfArrResultColumn)) {
-                                        $duplicatedColumn = true;
-                                        break;
-                                    }
-                                }
-                                if (!$duplicatedColumn) {
-                                    $udfResultColumns[] = $udfArrResultColumn;
-                                }
-                            }
-
                             if ($row instanceof Aggregation) {
                                 $row->mergeAggregatedRow($filtered);
                             } else {
