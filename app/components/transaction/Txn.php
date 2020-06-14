@@ -522,7 +522,9 @@ class Txn
             );
         }
 
-        $this->executeUndoLogs();
+        if ($txnStatus !== TxnConst::STATUS_CANCELED) {
+            $this->executeUndoLogs();
+        }
 
         $continue = true;
 
