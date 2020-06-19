@@ -439,14 +439,10 @@ class Txn
 
         $continue = true;
 
-        //todo lock snapshot
-        $currentTxnSnapShot = $this->storage->getTxnSnapShot();
-
         if ($continue) {
             if ($txnStatus !== TxnConst::STATUS_COMMITTED) {
                 $continue = $this->setStatus(TxnConst::STATUS_COMMITTED)
                     ->setCommitTs(Tso::txnCommitTs())
-                    ->setCommitTxnSnapshot($currentTxnSnapShot)
                     ->update();
             }
         }
@@ -458,6 +454,21 @@ class Txn
                     $continue = false;
                 }
             }
+        }
+
+        //todo lock snapshot
+        $currentTxnSnapShot = $this->storage->getTxnSnapShot();
+
+        if ($continue) {
+            if ($currentTxnSnapShot->getIdList()->has($txnTs)) {
+                $currentTxnSnapShot->delIdList([$txnTs]);
+                return $this->storage->saveTxnSnapShot($currentTxnSnapShot);
+            }
+        }
+
+        if ($continue) {
+            $continue = $this->setCommitTxnSnapshot($currentTxnSnapShot)
+                ->update();
         }
 
         if ($continue) {
@@ -487,19 +498,9 @@ class Txn
             } else {
                 $continue = $this->storage->delTxn($txnTs);
                 if ($txnGcSnapShot->getIdList()->has($txnTs)) {
-                    if ($txnGcSnapShot->delIdList([$txnTs])) {
-                        $continue = $this->storage->saveTxnGCSnapShot($txnGcSnapShot);
-                    } else {
-                        $continue = false;
-                    }
+                    $txnGcSnapShot->delIdList([$txnTs]);
+                    $continue = $this->storage->saveTxnGCSnapShot($txnGcSnapShot);
                 }
-            }
-        }
-
-        if ($continue) {
-            if ($currentTxnSnapShot->getIdList()->has($txnTs)) {
-                $currentTxnSnapShot->delIdList([$txnTs]);
-                return $this->storage->saveTxnSnapShot($currentTxnSnapShot);
             }
         }
 

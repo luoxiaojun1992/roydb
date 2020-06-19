@@ -62,7 +62,6 @@ class Snapshot
     public function delIdList(array $idList): self
     {
         if (is_null($this->idList)) {
-            $this->idList = new BitIntArr();
             return $this;
         }
 
