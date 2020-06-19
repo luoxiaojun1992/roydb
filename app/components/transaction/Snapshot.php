@@ -14,6 +14,11 @@ class Snapshot
         return (new static())->setIdSlots($idSlots);
     }
 
+    public static function createFromArray($array)
+    {
+        return (new static())->setIdSlots($array['id_slots']);
+    }
+
     public function getIdList()
     {
         return $this->idList;

@@ -240,9 +240,9 @@ class Txn
     }
 
     /**
-     * @return Snapshot
+     * @return Snapshot|null
      */
-    public function getCommitTxnSnapshot(): Snapshot
+    public function getCommitTxnSnapshot(): ?Snapshot
     {
         return $this->commitTxnSnapshot;
     }
@@ -321,6 +321,8 @@ class Txn
      */
     public function __toString()
     {
+        $commitTxnSnapshot = $this->getCommitTxnSnapshot();
+
         return json_encode([
             'status' => $this->getStatus(),
             'redo_logs' => array_map(fn(RedoLog $redoLog) => $redoLog->toArray(), $this->getRedoLogs()),
@@ -329,7 +331,7 @@ class Txn
             'commit_ts' => $this->getCommitTs(),
             'lock_keys' => $this->getLockKeys(),
             'txn_snapshot' => $this->getTxnSnapshot()->toArray(),
-            'commit_txn_snapshot' => $this->getCommitTxnSnapshot()->toArray(),
+            'commit_txn_snapshot' => $commitTxnSnapshot ? $commitTxnSnapshot->toArray() : null,
         ]);
     }
 
@@ -456,6 +458,13 @@ class Txn
             }
         }
 
+        /**
+         * Delete from global txn snapshot, to avoid creating new txn with txn snapshot contains this txn.
+         *
+         * To ensure that this txn can be located, add this txn to global txn gc snapshot before deleting
+         * this txn from global txn snapshot.
+         */
+
         if ($continue) {
             $txnGcSnapShot = $this->storage->getTxnGCSnapShot();
             if (is_null($txnGcSnapShot)) {
@@ -478,8 +487,10 @@ class Txn
         }
 
         if ($continue) {
-            $continue = $this->setCommitTxnSnapshot($currentTxnSnapShot)
-                ->update();
+            if (is_null($this->commitTxnSnapshot)) {
+                $continue = $this->setCommitTxnSnapshot($currentTxnSnapShot)
+                    ->update();
+            }
         }
 
         if ($continue) {
@@ -527,6 +538,7 @@ class Txn
             );
         }
 
+        //To avoid updating data after unlocking
         if ($txnStatus !== TxnConst::STATUS_CANCELED) {
             $this->executeUndoLogs();
         }
@@ -607,10 +619,11 @@ class Txn
             ->setCommitTs($txnArr['commit_ts'])
             ->setLockKeys($txnArr['lock_keys'])
             ->setTxnSnapshot(
-                Snapshot::createFromIdSlots($txnArr['txn_snapshot']['id_slots'])
+                Snapshot::createFromArray($txnArr['txn_snapshot'])
             )
             ->setCommitTxnSnapshot(
-                Snapshot::createFromIdSlots($txnArr['commit_txn_snapshot']['id_slots'])
+                isset($txnArr['commit_txn_snapshot']) ?
+                Snapshot::createFromArray($txnArr['commit_txn_snapshot']) : null
             )
             ->setStorage($storage);
     }
