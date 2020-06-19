@@ -456,6 +456,17 @@ class Txn
             }
         }
 
+        if ($continue) {
+            $txnGcSnapShot = $this->storage->getTxnGCSnapShot();
+            if (is_null($txnGcSnapShot)) {
+                $txnGcSnapShot = new Snapshot();
+            }
+            if (!$txnGcSnapShot->getIdList()->has($txnTs)) {
+                $txnGcSnapShot->addIdList([$txnTs]);
+                $continue = $this->storage->saveTxnGCSnapShot($txnGcSnapShot);
+            }
+        }
+
         //todo lock snapshot
         $currentTxnSnapShot = $this->storage->getTxnSnapShot();
 
@@ -487,19 +498,12 @@ class Txn
 
             //todo lock gc snapshot
             $txnGcSnapShot = $this->storage->getTxnGCSnapShot();
-            if (is_null($txnGcSnapShot)) {
-                $txnGcSnapShot = new Snapshot();
-            }
-            if (!$toDeleteTxn) { //txn cannot be deleted, because other txns using the undo log of this
-                if (!$txnGcSnapShot->getIdList()->has($txnTs)) {
-                    $txnGcSnapShot->addIdList([$txnTs]);
-                    $continue = $this->storage->saveTxnGCSnapShot($txnGcSnapShot);
-                }
-            } else {
-                $continue = $this->storage->delTxn($txnTs);
-                if ($txnGcSnapShot->getIdList()->has($txnTs)) {
-                    $txnGcSnapShot->delIdList([$txnTs]);
-                    $continue = $this->storage->saveTxnGCSnapShot($txnGcSnapShot);
+            if ($toDeleteTxn) { //The txn can be deleted, because other txns will not use the undo log of this txn
+                if ($this->storage->delTxn($txnTs)) {
+                    if ($txnGcSnapShot->getIdList()->has($txnTs)) {
+                        $txnGcSnapShot->delIdList([$txnTs]);
+                        $continue = $this->storage->saveTxnGCSnapShot($txnGcSnapShot);
+                    }
                 }
             }
         }
@@ -552,11 +556,13 @@ class Txn
         if ($continue) {
             //todo lock snapshot
             $txnSnapShot = $this->storage->getTxnSnapShot();
-            $txnSnapShot->delIdList([$txnTs]);
-            return $this->storage->saveTxnSnapShot($txnSnapShot);
+            if ($txnSnapShot->getIdList()->has($txnTs)) {
+                $txnSnapShot->delIdList([$txnTs]);
+                $continue = $this->storage->saveTxnSnapShot($txnSnapShot);
+            }
         }
 
-        return false;
+        return $continue;
     }
 
     /**
