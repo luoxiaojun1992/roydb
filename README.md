@@ -21,3 +21,7 @@ java -jar target/roykv-1.0-SNAPSHOT.jar kv path/to/roykv/src/main/resources/conf
 ```shell
 go run main.go
 ```
+
+## Roadmap
+
+1. Add column name mapping for online DDL
