@@ -1166,6 +1166,8 @@ class QueryPlan implements PlanInterface
     {
         $udfResultColumns = [];
 
+        //TODO optimization: reduce number of iterations of result set
+
         foreach ($columns as $columnIndex => $column) {
             foreach ($resultSet as $rowIndex => $row) {
                 if ($row instanceof Aggregation) {
