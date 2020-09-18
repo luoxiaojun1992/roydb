@@ -24,16 +24,6 @@ class Roykv extends KvStorage
     }
 
     /**
-     * @param $name
-     * @param bool $new
-     * @return KvClient|bool
-     */
-    protected function openBtree($name, $new = false)
-    {
-        return $this->getKvClient();
-    }
-
-    /**
      * @param KvClient $btree
      * @param $schemaName
      * @return null|string
@@ -250,5 +240,10 @@ class Roykv extends KvStorage
     protected function metaTxnGCSnapshotSet($btree, Snapshot $snapshot)
     {
         // TODO: Implement metaTxnGCSnapshotSet() method.
+    }
+
+    protected function metaSchemaSet($kvClient, $schemaName, $schemaMeta)
+    {
+        // TODO: Implement metaSchemaSet() method.
     }
 }

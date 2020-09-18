@@ -18,10 +18,14 @@ abstract class KvStorage extends AbstractStorage
 
     protected array $schemaMetaCache = [];
 
-    abstract protected function openBtree($name, $new = false);
+    abstract protected function getKvClient();
 
+    //Schema Meta Operations
     abstract protected function metaSchemaGet($btree, $schemaName);
 
+    abstract protected function metaSchemaSet($kvClient, $schemaName, $schemaMeta);
+
+    //Schema Data Operations
     abstract protected function dataSchemaGetAll($btree, $indexName);
 
     abstract protected function dataSchemaGetById($btree, $id, $schema);
@@ -38,6 +42,7 @@ abstract class KvStorage extends AbstractStorage
 
     abstract protected function dataSchemaDel($btree, $indexName, $id);
 
+    //Txn Meta Operations
     abstract protected function metaTxnGet($btree, $txnId);
 
     abstract protected function metaTxnSet($btree, $txnId, $txnJson);
@@ -71,7 +76,7 @@ abstract class KvStorage extends AbstractStorage
             return $cache;
         }
 
-        $metaSchema = $this->openBtree('meta.schema');
+        $metaSchema = $this->getKvClient();
         $schemaData = $this->metaSchemaGet($metaSchema, $schema);
 
         if (!$schemaData) {
@@ -87,9 +92,27 @@ abstract class KvStorage extends AbstractStorage
         return $result;
     }
 
+    /**
+     * @param $schema
+     * @param $metaData
+     * @return mixed
+     * @throws \Throwable
+     */
     public function addSchemaMetaData($schema, $metaData)
     {
-        // TODO: Implement addSchemaMetaData() method.
+        if (!is_null($this->getSchemaMetaData($schema))) {
+            throw new \RuntimeException('Schema ' . $schema . ' existed');
+        }
+
+        $result = $this->metaSchemaSet($this->getKvClient(), $schema, $metaData);
+
+        if ($result) {
+            Scheduler::withoutPreemptive(function () use ($schema, $metaData) {
+                $this->schemaMetaCache[$schema] = $metaData;
+            });
+        }
+
+        return $result;
     }
 
     public function delSchemaMetaData($schema)
@@ -805,7 +828,7 @@ abstract class KvStorage extends AbstractStorage
             throw new \Exception('Schema ' . $schema . ' not exists');
         }
 
-        $btree = $this->openBtree($schema);
+        $btree = $this->getKvClient();
         if ($btree === false) {
             return 0;
         }
@@ -827,7 +850,7 @@ abstract class KvStorage extends AbstractStorage
 
         $indexName = $schema;
 
-        $index = $this->openBtree($indexName);
+        $index = $this->getKvClient();
         if ($index === false) {
             return [];
         }
@@ -908,7 +931,7 @@ abstract class KvStorage extends AbstractStorage
             throw new \Exception('Schema ' . $schema . ' not exists');
         }
 
-        $index = $this->openBtree($schema);
+        $index = $this->getKvClient();
         if ($index === false) {
             return null;
         }
@@ -1118,7 +1141,7 @@ abstract class KvStorage extends AbstractStorage
                             $partitionIndex
                         );
 
-                        $index = $this->openBtree($indexName);
+                        $index = $this->getKvClient();
                         if ($index === false) {
                             $channel->push([]);
                             return;
@@ -1232,7 +1255,7 @@ abstract class KvStorage extends AbstractStorage
                 return array_values($indexData);
             } else {
                 list($indexName, $usingPrimaryIndex) = $this->selectIndex($schema, $field);
-                $index = $this->openBtree($indexName);
+                $index = $this->getKvClient();
 
                 $itStart = '';
                 $itEnd = '';
@@ -1488,7 +1511,7 @@ abstract class KvStorage extends AbstractStorage
                             $partitionIndex
                         );
 
-                        $index = $this->openBtree($indexName);
+                        $index = $this->getKvClient();
                         if ($index === false) {
                             $channel->push([]);
                             return;
@@ -1601,7 +1624,7 @@ abstract class KvStorage extends AbstractStorage
                 return array_values($indexData);
             } else {
                 list($indexName, $usingPrimaryIndex) = $this->selectIndex($schema, $operandValue1);
-                $index = $this->openBtree($indexName);
+                $index = $this->getKvClient();
 
                 $itStart = '';
                 $itEnd = '';
@@ -2099,7 +2122,7 @@ abstract class KvStorage extends AbstractStorage
      */
     protected function fetchAllColumnsByIndexData($indexData, $schema)
     {
-        $index = $this->openBtree($schema);
+        $index = $this->getKvClient();
         if ($index === false) {
             return [];
         }
@@ -2184,7 +2207,7 @@ abstract class KvStorage extends AbstractStorage
         $existedRows = $this->fetchAllColumnsByIndexData($rows, $schema);
         $existedRowsPkList = array_column($existedRows, $pk);
 
-        $pIndex = $this->openBtree($schema);
+        $pIndex = $this->getKvClient();
         foreach ($rows as $row) {
             if (in_array($row[$pk], $existedRowsPkList)) {
                 continue;
@@ -2225,7 +2248,7 @@ abstract class KvStorage extends AbstractStorage
 
         foreach ($schemaMeta['index'] as $indexConfig) {
             $indexName = $indexConfig['name'];
-            $indexBtree = $this->openBtree($schema . '.' . $indexName);
+            $indexBtree = $this->getKvClient();
             $indexPk = $indexConfig['columns'][0];
 
             if (!isset($row[$indexPk])) {
@@ -2307,7 +2330,7 @@ abstract class KvStorage extends AbstractStorage
                 $partitionIndexName = $schema . '.' . $partitionPk . '.partition.' . (string)$targetPartitionIndex;
                 $partitionIndexData = json_encode([[$pk => $row[$pk]]]);
             }
-            $partitionIndex = $this->openBtree($partitionIndexName);
+            $partitionIndex = $this->getKvClient();
             return $this->dataSchemaSet(
                 $partitionIndex,
                 $partitionIndexName,
@@ -2357,7 +2380,7 @@ abstract class KvStorage extends AbstractStorage
      */
     public function del($schema, $pkList)
     {
-        $rows = $this->dataSchemaMGet($this->openBtree($schema), $schema, $pkList);
+        $rows = $this->dataSchemaMGet($this->getKvClient(), $schema, $pkList);
 
         $rows = array_filter($rows);
 
@@ -2375,7 +2398,7 @@ abstract class KvStorage extends AbstractStorage
         }
 
         $pk = $schemaMetaData['pk'];
-        $pIndex = $this->openBtree($schema);
+        $pIndex = $this->getKvClient();
         foreach ($rows as $row) {
             if (isset($schemaMetaData['index'])) {
                 if (!$this->delIndex($schemaMetaData, $schema, $row)) {
@@ -2410,7 +2433,7 @@ abstract class KvStorage extends AbstractStorage
     {
         foreach ($schemaMeta['index'] as $indexConfig) {
             $indexName = $indexConfig['name'];
-            $indexBtree = $this->openBtree($schema . '.' . $indexName);
+            $indexBtree = $this->getKvClient();
             $indexPk = $indexConfig['columns'][0];
 
             if (!isset($row[$indexPk])) {
@@ -2489,7 +2512,7 @@ abstract class KvStorage extends AbstractStorage
             } else {
                 $partitionIndexName = $schema . '.' . $partitionPk . '.partition.' . (string)$targetPartitionIndex;
             }
-            $partitionIndex = $this->openBtree($partitionIndexName);
+            $partitionIndex = $this->getKvClient();
             return $this->dataSchemaDel(
                 $partitionIndex,
                 $partitionIndexName,
@@ -2509,7 +2532,7 @@ abstract class KvStorage extends AbstractStorage
      */
     public function update($schema, $pkList, $updateRow)
     {
-        $rows = $this->dataSchemaMGet($this->openBtree($schema), $schema, $pkList);
+        $rows = $this->dataSchemaMGet($this->getKvClient(), $schema, $pkList);
 
         $rows = array_filter($rows);
 
@@ -2527,7 +2550,7 @@ abstract class KvStorage extends AbstractStorage
         }
 
         $pk = $schemaMeta['pk'];
-        $pIndex = $this->openBtree($schema);
+        $pIndex = $this->getKvClient();
         foreach ($rows as $row) {
             $rowDiff = [];
             $rowDiffOrig = [];
@@ -2598,7 +2621,7 @@ abstract class KvStorage extends AbstractStorage
 
         $indexName = $schema . '.' . $index;
 
-        $btree = $this->openBtree($indexName);
+        $btree = $this->getKvClient();
         if ($btree === false) {
             return [];
         }

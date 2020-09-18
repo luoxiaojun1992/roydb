@@ -24,16 +24,6 @@ class TiKV extends KvStorage
     }
 
     /**
-     * @param $name
-     * @param bool $new
-     * @return TiKVClient|bool
-     */
-    protected function openBtree($name, $new = false)
-    {
-        return $this->getKvClient();
-    }
-
-    /**
      * @param TiKVClient $btree
      * @param $schemaName
      * @return null|string
@@ -48,6 +38,25 @@ class TiKV extends KvStorage
         }
 
         return $metaSchema;
+    }
+
+    /**
+     * @param TiKVClient $kvClient
+     * @param $schemaName
+     * @param $schemaMeta
+     * @return false
+     */
+    protected function metaSchemaSet($kvClient, $schemaName, $schemaMeta)
+    {
+        $setReply = $kvClient->Set(
+            (new SetRequest())->setKey('meta.schema::' . $schemaName)
+            ->setValue($schemaMeta)
+        );
+        if ($setReply) {
+            return $setReply->getResult();
+        }
+
+        return false;
     }
 
     /**
