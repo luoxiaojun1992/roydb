@@ -21,41 +21,43 @@ abstract class KvStorage extends AbstractStorage
     abstract protected function getKvClient();
 
     //Schema Meta Operations
-    abstract protected function metaSchemaGet($btree, $schemaName);
+    abstract protected function metaSchemaGet($kvClient, $schemaName);
 
     abstract protected function metaSchemaSet($kvClient, $schemaName, $schemaMeta);
 
-    //Schema Data Operations
-    abstract protected function dataSchemaGetAll($btree, $indexName);
+    abstract protected function metaSchemaDel($kvClient, $schemaName);
 
-    abstract protected function dataSchemaGetById($btree, $id, $schema);
+    //Schema Data Operations
+    abstract protected function dataSchemaGetAll($kvClient, $indexName);
+
+    abstract protected function dataSchemaGetById($kvClient, $id, $schema);
 
     abstract protected function dataSchemaScan(
-        $btree, $indexName, &$startKey, &$endKey, $limit, $callback, &$skipFirst = false
+        $kvClient, $indexName, &$startKey, &$endKey, $limit, $callback, &$skipFirst = false
     );
 
-    abstract protected function dataSchemaMGet($btree, $schema, $idList);
+    abstract protected function dataSchemaMGet($kvClient, $schema, $idList);
 
-    abstract protected function dataSchemaCountAll($btree, $schema);
+    abstract protected function dataSchemaCountAll($kvClient, $schema);
 
-    abstract protected function dataSchemaSet($btree, $indexName, $id, $value);
+    abstract protected function dataSchemaSet($kvClient, $indexName, $id, $value);
 
-    abstract protected function dataSchemaDel($btree, $indexName, $id);
+    abstract protected function dataSchemaDel($kvClient, $indexName, $id);
 
     //Txn Meta Operations
-    abstract protected function metaTxnGet($btree, $txnId);
+    abstract protected function metaTxnGet($kvClient, $txnId);
 
-    abstract protected function metaTxnSet($btree, $txnId, $txnJson);
+    abstract protected function metaTxnSet($kvClient, $txnId, $txnJson);
 
-    abstract protected function metaTxnDel($btree, $txnId);
+    abstract protected function metaTxnDel($kvClient, $txnId);
 
-    abstract protected function metaTxnSnapshotGet($btree);
+    abstract protected function metaTxnSnapshotGet($kvClient);
 
-    abstract protected function metaTxnSnapshotSet($btree, Snapshot $snapshot);
+    abstract protected function metaTxnSnapshotSet($kvClient, Snapshot $snapshot);
 
-    abstract protected function metaTxnGCSnapshotGet($btree);
+    abstract protected function metaTxnGCSnapshotGet($kvClient);
 
-    abstract protected function metaTxnGCSnapshotSet($btree, Snapshot $snapshot);
+    abstract protected function metaTxnGCSnapshotSet($kvClient, Snapshot $snapshot);
 
     /**
      * @param $schema
@@ -117,7 +119,7 @@ abstract class KvStorage extends AbstractStorage
 
     public function delSchemaMetaData($schema)
     {
-        // TODO: Implement delSchemaMetaData() method.
+        $this->metaSchemaDel($this->getKvClient(), $schema);
     }
 
     public function updateSchemaMetaData($schema, $metaData)

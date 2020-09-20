@@ -24,15 +24,15 @@ class Roykv extends KvStorage
     }
 
     /**
-     * @param KvClient $btree
+     * @param KvClient $kvClient
      * @param $schemaName
      * @return null|string
      */
-    protected function metaSchemaGet($btree, $schemaName)
+    protected function metaSchemaGet($kvClient, $schemaName)
     {
         $metaSchema = null;
 
-        $getReply = $btree->Get((new GetRequest())->setKey('meta.schema::' . $schemaName));
+        $getReply = $kvClient->Get((new GetRequest())->setKey('meta.schema::' . $schemaName));
         if ($getReply) {
             $metaSchema = $getReply->getValue() ?: null;
         }
@@ -40,15 +40,25 @@ class Roykv extends KvStorage
         return $metaSchema;
     }
 
+    protected function metaSchemaSet($kvClient, $schemaName, $schemaMeta)
+    {
+        // TODO: Implement metaSchemaSet() method.
+    }
+
+    protected function metaSchemaDel($kvClient, $schemaName)
+    {
+        // TODO: Implement metaSchemaDel() method.
+    }
+
     /**
-     * @param KvClient $btree
+     * @param KvClient $kvClient
      * @param $indexName
      * @return array
      */
-    protected function dataSchemaGetAll($btree, $indexName)
+    protected function dataSchemaGetAll($kvClient, $indexName)
     {
         $values = [];
-        $getAllReply = $btree->GetAll((new GetAllRequest())->setKeyPrefix('data.schema.' . $indexName . '::'));
+        $getAllReply = $kvClient->GetAll((new GetAllRequest())->setKeyPrefix('data.schema.' . $indexName . '::'));
         if ($getAllReply) {
             $data = $getAllReply->getData();
             foreach ($data as $key => $value) {
@@ -60,19 +70,19 @@ class Roykv extends KvStorage
     }
 
     /**
-     * @param KvClient $btree
+     * @param KvClient $kvClient
      * @param $id
      * @param $schema
      * @return null|string
      */
-    protected function dataSchemaGetById($btree, $id, $schema)
+    protected function dataSchemaGetById($kvClient, $id, $schema)
     {
         $data = null;
         if (is_int($id)) {
             $id = (string)$id;
         }
 
-        $getReply = $btree->Get((new GetRequest())->setKey('data.schema.' . $schema . '::' . $id));
+        $getReply = $kvClient->Get((new GetRequest())->setKey('data.schema.' . $schema . '::' . $id));
         if ($getReply) {
             $data = $getReply->getValue() ?: null;
         }
@@ -81,7 +91,7 @@ class Roykv extends KvStorage
     }
 
     /**
-     * @param KvClient $btree
+     * @param KvClient $kvClient
      * @param $indexName
      * @param $startKey
      * @param $endKey
@@ -90,10 +100,10 @@ class Roykv extends KvStorage
      * @param bool $skipFirst
      */
     protected function dataSchemaScan(
-        $btree, $indexName, &$startKey, &$endKey, $limit, $callback, &$skipFirst = false
+        $kvClient, $indexName, &$startKey, &$endKey, $limit, $callback, &$skipFirst = false
     )
     {
-        while (($scanReply = $btree->Scan(
+        while (($scanReply = $kvClient->Scan(
             (new ScanRequest())->setStartKey('data.schema.' . $indexName . '::' . ((string)$startKey))
                 ->setStartKeyType(gettype($startKey))
                 ->setEndKey((((string)$endKey) === '') ? '' : ('data.schema.' . $indexName . '::' . ((string)$endKey)))
@@ -121,12 +131,12 @@ class Roykv extends KvStorage
     }
 
     /**
-     * @param KvClient $btree
+     * @param KvClient $kvClient
      * @param $schema
      * @param $idList
      * @return array
      */
-    protected function dataSchemaMGet($btree, $schema, $idList)
+    protected function dataSchemaMGet($kvClient, $schema, $idList)
     {
         $values = [];
 
@@ -134,7 +144,7 @@ class Roykv extends KvStorage
             $val = 'data.schema.' . $schema . '::' . ((string)$val);
         });
 
-        $mGetReply = $btree->MGet((new MGetRequest())->setKeys($idList));
+        $mGetReply = $kvClient->MGet((new MGetRequest())->setKeys($idList));
         if ($mGetReply) {
             $data = $mGetReply->getData();
             foreach ($data as $key => $value) {
@@ -146,13 +156,13 @@ class Roykv extends KvStorage
     }
 
     /**
-     * @param KvClient $btree
+     * @param KvClient $kvClient
      * @param $schema
      * @return mixed
      */
-    protected function dataSchemaCountAll($btree, $schema)
+    protected function dataSchemaCountAll($kvClient, $schema)
     {
-        $countReply = $btree->Count(
+        $countReply = $kvClient->Count(
             (new CountRequest())->setStartKey('data.schema.' . $schema . '::')
                 ->setStartKeyType(gettype(''))
                 ->setEndKey('')
@@ -168,15 +178,15 @@ class Roykv extends KvStorage
     }
 
     /**
-     * @param KvClient $btree
+     * @param KvClient $kvClient
      * @param $indexName
      * @param $id
      * @param $value
      * @return bool
      */
-    protected function dataSchemaSet($btree, $indexName, $id, $value)
+    protected function dataSchemaSet($kvClient, $indexName, $id, $value)
     {
-        $setReply = $btree->Set(
+        $setReply = $kvClient->Set(
             (new SetRequest())->setKey('data.schema.' . $indexName . '::' . $id)
                 ->setValue($value)
         );
@@ -189,14 +199,14 @@ class Roykv extends KvStorage
     }
 
     /**
-     * @param KvClient $btree
+     * @param KvClient $kvClient
      * @param $indexName
      * @param $id
      * @return bool
      */
-    protected function dataSchemaDel($btree, $indexName, $id)
+    protected function dataSchemaDel($kvClient, $indexName, $id)
     {
-        $delReply = $btree->Del(
+        $delReply = $kvClient->Del(
             (new DelRequest())->setKeys(['data.schema.' . $indexName . '::' . $id])
         );
 
@@ -207,43 +217,38 @@ class Roykv extends KvStorage
         return false;
     }
 
-    protected function metaTxnGet($btree, $txnId)
+    protected function metaTxnGet($kvClient, $txnId)
     {
         // TODO: Implement metaTxnGet() method.
     }
 
-    protected function metaTxnSet($btree, $txnId, $txnJson)
+    protected function metaTxnSet($kvClient, $txnId, $txnJson)
     {
         // TODO: Implement metaTxnSet() method.
     }
 
-    protected function metaTxnDel($btree, $txnId)
+    protected function metaTxnDel($kvClient, $txnId)
     {
         // TODO: Implement metaTxnDel() method.
     }
 
-    protected function metaTxnSnapshotGet($btree)
+    protected function metaTxnSnapshotGet($kvClient)
     {
         // TODO: Implement metaTxnSnapshotGet() method.
     }
 
-    protected function metaTxnSnapshotSet($btree, Snapshot $snapshot)
+    protected function metaTxnSnapshotSet($kvClient, Snapshot $snapshot)
     {
         // TODO: Implement metaTxnSnapshotSet() method.
     }
 
-    protected function metaTxnGCSnapshotGet($btree)
+    protected function metaTxnGCSnapshotGet($kvClient)
     {
         // TODO: Implement metaTxnGCSnapshotGet() method.
     }
 
-    protected function metaTxnGCSnapshotSet($btree, Snapshot $snapshot)
+    protected function metaTxnGCSnapshotSet($kvClient, Snapshot $snapshot)
     {
         // TODO: Implement metaTxnGCSnapshotSet() method.
-    }
-
-    protected function metaSchemaSet($kvClient, $schemaName, $schemaMeta)
-    {
-        // TODO: Implement metaSchemaSet() method.
     }
 }
