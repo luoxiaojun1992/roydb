@@ -1958,7 +1958,7 @@ abstract class KvStorage extends AbstractStorage
                 } else {
                     if ($isNot && ($subCondition->getLogicOperator() === 'not')) {
                         $subCostList = [];
-                        foreach ($subCondition as $subSubCondition) {
+                        foreach ($subCondition->getSubConditions() as $subSubCondition) {
                             $cost = $this->countPartitionByCondition($schema, $subSubCondition);
                             $subCostList[] = $cost;
                         }
