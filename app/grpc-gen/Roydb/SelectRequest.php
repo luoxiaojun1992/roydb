@@ -16,7 +16,7 @@ class SelectRequest extends \Google\Protobuf\Internal\Message
     /**
      * Generated from protobuf field <code>string sql = 1;</code>
      */
-    private $sql = '';
+    protected $sql = '';
 
     /**
      * Constructor.

@@ -9,9 +9,9 @@ use Google\Protobuf\Internal\RepeatedField;
 use Google\Protobuf\Internal\GPBUtil;
 
 /**
- * Generated from protobuf message <code>roydb.CommitResponse</code>
+ * Generated from protobuf message <code>roydb.CreateResponse</code>
  */
-class CommitResponse extends \Google\Protobuf\Internal\Message
+class CreateResponse extends \Google\Protobuf\Internal\Message
 {
     /**
      * Generated from protobuf field <code>bool result = 1;</code>

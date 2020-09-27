@@ -22,5 +22,10 @@ interface WriteInterface
      * @return \Roydb\UpdateResponse
      */
     public function Update(\Roydb\UpdateRequest $request);
+    /**
+     * @param \Roydb\CreateRequest $request
+     * @return \Roydb\CreateResponse
+     */
+    public function Create(\Roydb\CreateRequest $request);
 
 }

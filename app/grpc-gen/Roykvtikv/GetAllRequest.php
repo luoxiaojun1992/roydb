@@ -16,7 +16,7 @@ class GetAllRequest extends \Google\Protobuf\Internal\Message
     /**
      * Generated from protobuf field <code>string keyPrefix = 1;</code>
      */
-    private $keyPrefix = '';
+    protected $keyPrefix = '';
 
     /**
      * Constructor.

@@ -7,6 +7,7 @@ use App\components\optimizers\RulesBasedOptimizer;
 use App\components\Parser;
 use App\components\plans\Plan;
 use App\components\storage\StorageFactory;
+use Roydb\CreateResponse;
 use Roydb\DeleteResponse;
 use Roydb\InsertResponse;
 use Roydb\UpdateResponse;
@@ -70,4 +71,13 @@ class WriteService extends \SwFwLess\services\GrpcUnaryService implements WriteI
         return (new UpdateResponse())->setAffectedRows($affectedRows);
     }
 
+    public function Create(\Roydb\CreateRequest $request)
+    {
+        $sql = $request->getSql();
+        $ast = Parser::fromSql($sql)->parseAst();
+
+        var_dump($ast->getStmt());
+
+        return (new CreateResponse())->setResult(false);
+    }
 }

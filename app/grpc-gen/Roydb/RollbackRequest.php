@@ -16,7 +16,7 @@ class RollbackRequest extends \Google\Protobuf\Internal\Message
     /**
      * Generated from protobuf field <code>int64 ts = 1;</code>
      */
-    private $ts = 0;
+    protected $ts = 0;
 
     /**
      * Constructor.

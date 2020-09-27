@@ -16,7 +16,7 @@ class EstIndexCardResponse extends \Google\Protobuf\Internal\Message
     /**
      * Generated from protobuf field <code>bool accepted = 1;</code>
      */
-    private $accepted = false;
+    protected $accepted = false;
 
     /**
      * Constructor.

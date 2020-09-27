@@ -16,11 +16,11 @@ class EstIndexCardRequest extends \Google\Protobuf\Internal\Message
     /**
      * Generated from protobuf field <code>string schema = 1;</code>
      */
-    private $schema = '';
+    protected $schema = '';
     /**
      * Generated from protobuf field <code>string index = 2;</code>
      */
-    private $index = '';
+    protected $index = '';
 
     /**
      * Constructor.

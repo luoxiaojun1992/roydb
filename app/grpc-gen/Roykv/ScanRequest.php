@@ -16,27 +16,27 @@ class ScanRequest extends \Google\Protobuf\Internal\Message
     /**
      * Generated from protobuf field <code>string startKey = 1;</code>
      */
-    private $startKey = '';
+    protected $startKey = '';
     /**
      * Generated from protobuf field <code>string startKeyType = 2;</code>
      */
-    private $startKeyType = '';
+    protected $startKeyType = '';
     /**
      * Generated from protobuf field <code>string endKey = 3;</code>
      */
-    private $endKey = '';
+    protected $endKey = '';
     /**
      * Generated from protobuf field <code>string endKeyType = 4;</code>
      */
-    private $endKeyType = '';
+    protected $endKeyType = '';
     /**
      * Generated from protobuf field <code>string keyPrefix = 5;</code>
      */
-    private $keyPrefix = '';
+    protected $keyPrefix = '';
     /**
      * Generated from protobuf field <code>uint64 limit = 6;</code>
      */
-    private $limit = 0;
+    protected $limit = 0;
 
     /**
      * Constructor.

@@ -16,7 +16,7 @@ class CountReply extends \Google\Protobuf\Internal\Message
     /**
      * Generated from protobuf field <code>uint64 count = 1;</code>
      */
-    private $count = 0;
+    protected $count = 0;
 
     /**
      * Constructor.

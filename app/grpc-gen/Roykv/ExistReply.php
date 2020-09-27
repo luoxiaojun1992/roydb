@@ -16,7 +16,7 @@ class ExistReply extends \Google\Protobuf\Internal\Message
     /**
      * Generated from protobuf field <code>bool existed = 1;</code>
      */
-    private $existed = false;
+    protected $existed = false;
 
     /**
      * Constructor.

@@ -31,6 +31,7 @@ service Write {
     rpc Insert (InsertRequest) returns (InsertResponse) {}
     rpc Delete (DeleteRequest) returns (DeleteResponse) {}
     rpc Update (UpdateRequest) returns (UpdateResponse) {}
+    rpc Create (CreateRequest) returns (CreateResponse) {}
 }
 
 message InsertRequest {
@@ -55,6 +56,14 @@ message UpdateRequest {
 
 message UpdateResponse {
     int64 affectedRows = 1;
+}
+
+message CreateRequest {
+    string sql = 1;
+}
+
+message CreateResponse {
+    bool result = 1;
 }
 
 service Txn {

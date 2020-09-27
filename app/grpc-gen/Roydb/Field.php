@@ -16,27 +16,27 @@ class Field extends \Google\Protobuf\Internal\Message
     /**
      * Generated from protobuf field <code>string key = 1;</code>
      */
-    private $key = '';
+    protected $key = '';
     /**
      * Generated from protobuf field <code>string valueType = 2;</code>
      */
-    private $valueType = '';
+    protected $valueType = '';
     /**
      * Generated from protobuf field <code>int64 intValue = 3;</code>
      */
-    private $intValue = 0;
+    protected $intValue = 0;
     /**
      * Generated from protobuf field <code>double doubleValue = 4;</code>
      */
-    private $doubleValue = 0.0;
+    protected $doubleValue = 0.0;
     /**
      * Generated from protobuf field <code>string strValue = 5;</code>
      */
-    private $strValue = '';
+    protected $strValue = '';
     /**
      * Generated from protobuf field <code>string charset = 6;</code>
      */
-    private $charset = '';
+    protected $charset = '';
 
     /**
      * Constructor.

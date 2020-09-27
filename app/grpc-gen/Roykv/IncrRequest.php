@@ -16,11 +16,11 @@ class IncrRequest extends \Google\Protobuf\Internal\Message
     /**
      * Generated from protobuf field <code>string key = 1;</code>
      */
-    private $key = '';
+    protected $key = '';
     /**
      * Generated from protobuf field <code>uint64 step = 2;</code>
      */
-    private $step = 0;
+    protected $step = 0;
 
     /**
      * Constructor.

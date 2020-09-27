@@ -16,7 +16,7 @@ class DelReply extends \Google\Protobuf\Internal\Message
     /**
      * Generated from protobuf field <code>uint64 deleted = 1;</code>
      */
-    private $deleted = 0;
+    protected $deleted = 0;
 
     /**
      * Constructor.

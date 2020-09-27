@@ -18,11 +18,11 @@ class HelloRequest extends \Google\Protobuf\Internal\Message
     /**
      * Generated from protobuf field <code>string name = 1;</code>
      */
-    private $name = '';
+    protected $name = '';
     /**
      * Generated from protobuf field <code>string addr = 2;</code>
      */
-    private $addr = '';
+    protected $addr = '';
 
     /**
      * Constructor.

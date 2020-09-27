@@ -58,4 +58,18 @@ class WriteClient extends \Grpc\BaseStub {
         $metadata, $options);
     }
 
+    /**
+     * @param \Roydb\CreateRequest $argument input argument
+     * @param array $metadata metadata
+     * @param array $options call options
+     * @return \Roydb\CreateResponse[]|\Roydb\CreateResponse|\Grpc\StringifyAble[]
+     */
+    public function Create(\Roydb\CreateRequest $argument,
+      $metadata = [], $options = []) {
+        return $this->_simpleRequest('/roydb.Write/Create',
+        $argument,
+        ['\Roydb\CreateResponse', 'decode'],
+        $metadata, $options);
+    }
+
 }

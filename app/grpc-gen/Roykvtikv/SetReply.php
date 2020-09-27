@@ -16,7 +16,7 @@ class SetReply extends \Google\Protobuf\Internal\Message
     /**
      * Generated from protobuf field <code>bool result = 1;</code>
      */
-    private $result = false;
+    protected $result = false;
 
     /**
      * Constructor.

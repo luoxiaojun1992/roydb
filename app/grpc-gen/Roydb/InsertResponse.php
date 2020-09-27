@@ -16,7 +16,7 @@ class InsertResponse extends \Google\Protobuf\Internal\Message
     /**
      * Generated from protobuf field <code>int64 affectedRows = 1;</code>
      */
-    private $affectedRows = 0;
+    protected $affectedRows = 0;
 
     /**
      * Constructor.
