@@ -3,6 +3,7 @@
 namespace App\services;
 
 use App\services\roydb\WriteClient;
+use Roydb\CreateRequest;
 use Roydb\DeleteRequest;
 use Roydb\InsertRequest;
 use Roydb\UpdateRequest;
@@ -92,6 +93,32 @@ class WriteService extends BaseService
             'msg' => 'ok',
             'data' => [
                 'affected_rows' => $deleteResponse->getAffectedRows(),
+                'time_usage' => microtime(true) - $start,
+            ],
+        ];
+    }
+
+    public function create()
+    {
+        $start = microtime(true);
+        $sql = $this->request->post('sql');
+        $createResponse = (new WriteClient())->Create(
+            (new CreateRequest())->setSql($sql)
+        );
+
+        if (!$createResponse) {
+            return [
+                'code' => -1,
+                'msg' => 'failed',
+                'data' => [],
+            ];
+        }
+
+        return [
+            'code' => 0,
+            'msg' => 'ok',
+            'data' => [
+                'affected_rows' => $createResponse->getResult(),
                 'time_usage' => microtime(true) - $start,
             ],
         ];
