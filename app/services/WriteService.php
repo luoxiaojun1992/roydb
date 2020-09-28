@@ -118,7 +118,7 @@ class WriteService extends BaseService
             'code' => 0,
             'msg' => 'ok',
             'data' => [
-                'affected_rows' => $createResponse->getResult(),
+                'result' => $createResponse->getResult(),
                 'time_usage' => microtime(true) - $start,
             ],
         ];
