@@ -4,6 +4,7 @@ namespace App\components\plans;
 
 use App\components\Ast;
 use App\components\consts\Stmt;
+use App\components\plans\write\create\CreateTablePlan;
 use App\components\storage\AbstractStorage;
 
 /**
@@ -23,6 +24,7 @@ class Plan
         Stmt::TYPE_DELETE => DeletePlan::class,
         Stmt::TYPE_UPDATE => UpdatePlan::class,
         Stmt::TYPE_BEGIN => BeginPlan::class,
+        Stmt::TYPE_CREATE_TABLE => CreateTablePlan::class,
     ];
 
     /** @var Ast */

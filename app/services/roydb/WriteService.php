@@ -71,13 +71,20 @@ class WriteService extends \SwFwLess\services\GrpcUnaryService implements WriteI
         return (new UpdateResponse())->setAffectedRows($affectedRows);
     }
 
+    /**
+     * @param \Roydb\CreateRequest $request
+     * @return CreateResponse
+     * @throws \Throwable
+     */
     public function Create(\Roydb\CreateRequest $request)
     {
         $sql = $request->getSql();
         $ast = Parser::fromSql($sql)->parseAst();
+        $plan = Plan::create($ast, StorageFactory::create());
+        $plan = RulesBasedOptimizer::fromPlan($plan)->optimize();
+        $plan = CostBasedOptimizer::fromPlan($plan)->optimize();
+        $result = $plan->execute();
 
-        var_dump($ast->getStmt());
-
-        return (new CreateResponse())->setResult(false);
+        return (new CreateResponse())->setResult($result);
     }
 }

@@ -10,4 +10,5 @@ class Stmt
     const TYPE_UPDATE = 'update';
     const TYPE_BEGIN = 'begin';
     const TYPE_COMMIT = 'commit';
+    const TYPE_CREATE_TABLE = 'create_table';
 }

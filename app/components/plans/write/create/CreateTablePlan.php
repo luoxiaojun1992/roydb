@@ -1,11 +1,12 @@
 <?php
 
-namespace App\components\plans;
+namespace App\components\plans\write\create;
 
 use App\components\Ast;
+use App\components\plans\PlanInterface;
 use App\components\storage\AbstractStorage;
 
-class CreatePlan implements PlanInterface
+class CreateTablePlan implements PlanInterface
 {
     /** @var Ast */
     protected $ast;
@@ -31,6 +32,10 @@ class CreatePlan implements PlanInterface
 
     public function execute()
     {
+        var_dump($this->ast);
+
         // TODO: Implement execute() method.
+
+        return false;
     }
 }

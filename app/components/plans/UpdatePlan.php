@@ -7,6 +7,7 @@ use App\components\elements\condition\Condition;
 use App\components\elements\condition\ConditionTree;
 use App\components\optimizers\CostBasedOptimizer;
 use App\components\optimizers\RulesBasedOptimizer;
+use App\components\Parser;
 use App\components\storage\AbstractStorage;
 use PHPSQLParser\PHPSQLCreator;
 
@@ -107,7 +108,10 @@ class UpdatePlan implements PlanInterface
         unset($stmt['UPDATE']);
         $queryStmt = array_merge($queryStmt, $stmt);
 
-        $queryAst = new Ast((new PHPSQLCreator())->create($queryStmt), $queryStmt);
+        $queryAst = Parser::fromSql(
+            (new PHPSQLCreator())->create($queryStmt),
+            $queryStmt
+        )->parseAst();
         $plan = Plan::create($queryAst, $this->storage);
         $plan = RulesBasedOptimizer::fromPlan($plan)->optimize();
         $plan = CostBasedOptimizer::fromPlan($plan)->optimize();
