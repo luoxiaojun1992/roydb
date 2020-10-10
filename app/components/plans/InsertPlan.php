@@ -78,7 +78,7 @@ class InsertPlan implements PlanInterface
 
         $rows = [];
 
-        $schemaMetaData = $this->storage->getSchemaMetaData($this->table);
+        $schemaMetaData = $this->schemaMeta;
 
         $columns = $schemaMetaData['columns'];
 
