@@ -14,6 +14,14 @@ class CreateTablePlan implements PlanInterface
     /** @var AbstractStorage */
     protected $storage;
 
+    protected $schema;
+
+    protected $table;
+
+    protected $columns;
+
+    protected $schemaMeta;
+
     /**
      * InsertPlan constructor.
      * @param Ast $ast
@@ -28,7 +36,6 @@ class CreateTablePlan implements PlanInterface
 
         //todo sql校验
     }
-
 
     public function execute()
     {
