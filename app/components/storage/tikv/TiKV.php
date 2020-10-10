@@ -44,7 +44,7 @@ class TiKV extends KvStorage
      * @param TiKVClient $kvClient
      * @param $schemaName
      * @param $schemaMeta
-     * @return false
+     * @return bool
      */
     protected function metaSchemaSet($kvClient, $schemaName, $schemaMeta)
     {

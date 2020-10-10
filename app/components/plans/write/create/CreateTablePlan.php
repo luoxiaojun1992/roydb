@@ -40,9 +40,10 @@ class CreateTablePlan implements PlanInterface
     public function execute()
     {
         var_dump($this->ast);
+        return false;
 
         // TODO: Implement execute() method.
 
-        return false;
+        return $this->storage->addSchemaMetaData($this->table, $this->schemaMeta);
     }
 }

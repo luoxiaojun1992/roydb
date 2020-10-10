@@ -97,7 +97,7 @@ abstract class KvStorage extends AbstractStorage
     /**
      * @param $schema
      * @param $metaData
-     * @return mixed
+     * @return bool
      * @throws \Throwable
      */
     public function addSchemaMetaData($schema, $metaData)
