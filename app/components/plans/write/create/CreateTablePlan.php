@@ -18,6 +18,8 @@ class CreateTablePlan implements PlanInterface
 
     protected $table;
 
+    protected $tableOptions;
+
     protected $columns;
 
     protected $schemaMeta;
@@ -35,6 +37,32 @@ class CreateTablePlan implements PlanInterface
         $this->storage = $storage;
 
         //todo sql校验
+    }
+
+    protected function extractSchema()
+    {
+        $stmt = $this->ast->getStmt();
+        if (!isset($stmt['CREATE'])) {
+            throw new \Exception('Missing schema in the sql');
+        }
+        if (!isset($stmt['TABLE'])) {
+            throw new \Exception('Missing schema in the sql');
+        }
+
+        $this->schema = $stmt['TABLE'];
+
+        $table = $this->schema['name'];
+
+        $schemaMetaData = $this->storage->getSchemaMetaData($table);
+        if (!is_null($schemaMetaData)) {
+            throw new \Exception('Table ' . $table . ' existed');
+        }
+
+        $this->table = $table;
+
+        $this->tableOptions = $this->schema['options'];
+
+        $this->columns = $this->schema['create-def']['sub_tree'];
     }
 
     public function execute()

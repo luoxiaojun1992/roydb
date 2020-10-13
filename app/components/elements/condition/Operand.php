@@ -4,6 +4,7 @@ namespace App\components\elements\condition;
 
 class Operand
 {
+    //colref or const
     protected $type;
 
     protected $value;

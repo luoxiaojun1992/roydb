@@ -27,7 +27,7 @@ class RulesBasedOptimizer
 
     public function optimize()
     {
-        if (!($this->plan->getExecutePlan() instanceof QueryPlan)) {
+        if (!($this->plan->getExecutionPlan() instanceof QueryPlan)) {
             return $this->plan;
         }
 
@@ -52,7 +52,7 @@ class RulesBasedOptimizer
     protected function setStorageGetLimit()
     {
         /** @var QueryPlan $queryPlan */
-        $queryPlan = $this->plan->getExecutePlan();
+        $queryPlan = $this->plan->getExecutionPlan();
         $limit = $queryPlan->getLimit();
         if (is_null($limit)) {
             return;
@@ -81,7 +81,7 @@ class RulesBasedOptimizer
     protected function setCountAll()
     {
         /** @var QueryPlan $queryPlan */
-        $queryPlan = $this->plan->getExecutePlan();
+        $queryPlan = $this->plan->getExecutionPlan();
         if (!is_null($queryPlan->getGroups())) {
             return;
         }
@@ -129,7 +129,7 @@ class RulesBasedOptimizer
     protected function setUsedColumns()
     {
         /** @var QueryPlan $queryPlan */
-        $queryPlan = $this->plan->getExecutePlan();
+        $queryPlan = $this->plan->getExecutionPlan();
 
         $usedColumns = $this->getUsedColumns($queryPlan);
 
@@ -186,7 +186,7 @@ class RulesBasedOptimizer
         }
 
         /** @var QueryPlan $queryPlan */
-        $queryPlan = $this->plan->getExecutePlan();
+        $queryPlan = $this->plan->getExecutionPlan();
 
         foreach ($schemas as $schema) {
             if (!isset($schema['ref_clause'])) {

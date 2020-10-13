@@ -34,7 +34,7 @@ class Plan
     protected $storage;
 
     /** @var QueryPlan|InsertPlan */
-    protected $executePlan;
+    protected $executionPlan;
 
     protected $txnId;
 
@@ -54,7 +54,7 @@ class Plan
     protected function generatePlan()
     {
         $planClass = self::STMT_TYPE_PLAN_MAPPING[$this->ast->getStmtType()];
-        $this->executePlan = new $planClass($this->ast, $this->storage, $this->txnId);
+        $this->executionPlan = new $planClass($this->ast, $this->storage, $this->txnId);
     }
 
     /**
@@ -63,14 +63,14 @@ class Plan
      */
     public function execute()
     {
-        return $this->executePlan->execute();
+        return $this->executionPlan->execute();
     }
 
     /**
      * @return mixed
      */
-    public function getExecutePlan()
+    public function getExecutionPlan()
     {
-        return $this->executePlan;
+        return $this->executionPlan;
     }
 }

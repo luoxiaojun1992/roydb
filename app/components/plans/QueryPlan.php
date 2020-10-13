@@ -773,6 +773,7 @@ class QueryPlan implements PlanInterface
                 foreach ($operands as $operandIndex => $operand) {
                     $operandValue = $operand->getValue();
                     if ($operand->getType() === 'colref') {
+                        //extract value of right row as join match value by right col name
                         if ($operandValue !== $hashJoinField) {
                             if (array_key_exists($operandValue, $rightRow)) {
                                 $hashJoinValue = $rightRow[$operandValue];
