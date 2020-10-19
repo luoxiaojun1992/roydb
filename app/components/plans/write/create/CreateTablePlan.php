@@ -63,6 +63,55 @@ class CreateTablePlan implements PlanInterface
         $this->tableOptions = $this->schema['options'];
 
         $this->columns = $this->schema['create-def']['sub_tree'];
+
+        //TODO
+        $this->schemaMeta = [
+            'pk' => 'id',
+            'columns' => [
+                [
+                    'name' => 'id',
+                    'type' => 'int',
+                    'length' => 11,
+                    'default' => null,
+                    'allow_null' => false,
+                ],
+                [
+                    'name' => 'type',
+                    'type' => 'int',
+                    'length' => 11,
+                    'default' => 0,
+                    'allow_null' => false,
+                ],
+                [
+                    'name' => 'name',
+                    'type' => 'varchar',
+                    'length' => 255,
+                    'default' => '',
+                    'allow_null' => false,
+                ],
+            ],
+            'index' => [
+                [
+                    'name' => 'type',
+                    'columns' => ['type'],
+                    'unique' => false,
+                ],
+                [
+                    'name' => 'name',
+                    'columns' => ['name'],
+                    'unique' => false,
+                ],
+            ],
+            'partition' => [
+                'key' => 'id',
+                'range' => [
+                    [
+                        'lower' => '',
+                        'upper' => 1000,
+                    ]
+                ],
+            ],
+        ];
     }
 
     public function execute()
