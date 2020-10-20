@@ -22,7 +22,11 @@ class CreateTablePlan implements PlanInterface
 
     protected $columns;
 
-    protected $schemaMeta;
+    protected $pk;
+
+    protected $columnsMeta = [];
+
+    protected $schemaMeta = [];
 
     /**
      * InsertPlan constructor.
@@ -64,32 +68,53 @@ class CreateTablePlan implements PlanInterface
 
         $this->columns = $this->schema['create-def']['sub_tree'];
 
+        $pk = null;
+
+        foreach ($this->columns as $column) {
+            $columnName = null;
+            $isPk = false;
+
+            $attributes = $column['sub_tree'];
+            foreach ($attributes as $attribute) {
+                if ($attribute['expr_type'] === 'colref') {
+                    $columnName = $attribute['base_expr'];
+                } elseif ($attribute['expr_type'] === 'column-type') {
+                    if ($attribute['primary']) {
+                        $isPk = true;
+                    }
+                }
+            }
+
+            if (is_null($columnName)) {
+                throw new \Exception('Name of column is null');
+            }
+
+            if ($isPk) {
+                $pk = $columnName;
+            }
+
+//            [
+//                'name' => 'id',
+//                'type' => 'int',
+//                'length' => 11,
+//                'default' => null,
+//                'allow_null' => false,
+//            ]
+            $this->columnsMeta[] = [
+                'name' => $columnName,
+            ];
+        }
+
+        if (is_null($pk)) {
+            throw new \Exception('Primary key is null');
+        }
+
+        $this->pk = $pk;
+
         //TODO
         $this->schemaMeta = [
-            'pk' => 'id',
-            'columns' => [
-                [
-                    'name' => 'id',
-                    'type' => 'int',
-                    'length' => 11,
-                    'default' => null,
-                    'allow_null' => false,
-                ],
-                [
-                    'name' => 'type',
-                    'type' => 'int',
-                    'length' => 11,
-                    'default' => 0,
-                    'allow_null' => false,
-                ],
-                [
-                    'name' => 'name',
-                    'type' => 'varchar',
-                    'length' => 255,
-                    'default' => '',
-                    'allow_null' => false,
-                ],
-            ],
+            'pk' => $this->pk,
+            'columns' => $this->columnsMeta,
             'index' => [
                 [
                     'name' => 'type',
