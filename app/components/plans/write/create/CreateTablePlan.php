@@ -76,16 +76,15 @@ class CreateTablePlan implements PlanInterface
             $columnType = null;
             $columnLength = null;
             $columnUnsigned = null;
-            $allowedNull = true;
+            $nullable = true;
 
             $attributes = $column['sub_tree'];
             foreach ($attributes as $attribute) {
                 if ($attribute['expr_type'] === 'colref') {
                     $columnName = $attribute['base_expr'];
                 } elseif ($attribute['expr_type'] === 'column-type') {
-                    if ($attribute['primary']) {
-                        $isPk = true;
-                    }
+                    $isPk = $attribute['primary'];
+                    $nullable = $attribute['nullable'];
                     $columnTypeAttrs = $attribute['sub_tree'];
                     foreach ($columnTypeAttrs as $columnTypeAttr) {
                         if ($columnTypeAttr['expr_type'] === 'data-type') {
@@ -98,11 +97,23 @@ class CreateTablePlan implements PlanInterface
             }
 
             if (is_null($columnName)) {
-                throw new \Exception('Name of column is null');
+                throw new \Exception('Missing column name');
             }
 
             if (!in_array($columnType, ['varchar', 'char', 'int', 'double', 'decimal'])) {
                 throw new \Exception('Invalid column type');
+            }
+
+            if (in_array($columnType, ['varchar', 'char', 'int'])) {
+                if (is_null($columnLength)) {
+                    throw new \Exception('Missing column length');
+                }
+            }
+
+            if (in_array($columnType, ['int', 'double', 'decimal'])) {
+                if (is_null($columnUnsigned)) {
+                    throw new \Exception('Missing column sign');
+                }
             }
 
             if ($isPk) {
@@ -119,6 +130,7 @@ class CreateTablePlan implements PlanInterface
             $columnsMeta = [
                 'name' => $columnName,
                 'type' => $columnType,
+                'nullable' => $nullable,
             ];
 
             if (!is_null($columnLength)) {
