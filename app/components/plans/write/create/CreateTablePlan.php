@@ -73,6 +73,10 @@ class CreateTablePlan implements PlanInterface
         foreach ($this->columns as $column) {
             $columnName = null;
             $isPk = false;
+            $columnType = null;
+            $columnLength = null;
+            $columnUnsigned = null;
+            $allowedNull = true;
 
             $attributes = $column['sub_tree'];
             foreach ($attributes as $attribute) {
@@ -82,11 +86,23 @@ class CreateTablePlan implements PlanInterface
                     if ($attribute['primary']) {
                         $isPk = true;
                     }
+                    $columnTypeAttrs = $attribute['sub_tree'];
+                    foreach ($columnTypeAttrs as $columnTypeAttr) {
+                        if ($columnTypeAttr['expr_type'] === 'data-type') {
+                            $columnType = $columnTypeAttr['base_expr'];
+                            $columnLength = $columnTypeAttr['length'] ?? null;
+                            $columnUnsigned = $columnTypeAttr['unsigned'] ?? null;
+                        }
+                    }
                 }
             }
 
             if (is_null($columnName)) {
                 throw new \Exception('Name of column is null');
+            }
+
+            if (!in_array($columnType, ['varchar', 'char', 'int', 'double', 'decimal'])) {
+                throw new \Exception('Invalid column type');
             }
 
             if ($isPk) {
@@ -100,9 +116,20 @@ class CreateTablePlan implements PlanInterface
 //                'default' => null,
 //                'allow_null' => false,
 //            ]
-            $this->columnsMeta[] = [
+            $columnsMeta = [
                 'name' => $columnName,
+                'type' => $columnType,
             ];
+
+            if (!is_null($columnLength)) {
+                $columnsMeta['length'] = $columnLength;
+            }
+
+            if (!is_null($columnUnsigned)) {
+                $columnsMeta['unsigned'] = $columnUnsigned;
+            }
+
+            $this->columnsMeta[] = $columnsMeta;
         }
 
         if (is_null($pk)) {
