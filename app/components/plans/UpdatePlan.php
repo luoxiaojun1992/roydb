@@ -155,7 +155,7 @@ class UpdatePlan implements PlanInterface
             $columnValObj = $this->updateRow[$key];
             $columnVal = $this->extractColumnValueObj($columnValObj);
 
-            if (!$column['allow_null']) {
+            if (!$column['nullable']) {
                 if (is_null($columnVal)) {
                     throw new \Exception('Column ' . $column['name'] . ' can\'t be null');
                 }

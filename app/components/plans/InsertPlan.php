@@ -86,7 +86,7 @@ class InsertPlan implements PlanInterface
             $row = [];
             $data = $value['data'];
             foreach ($columns as $i => $column) {
-                if (!$column['allow_null']) {
+                if (!$column['nullable']) {
                     if (!isset($data[$i])) {
                         throw new \Exception('Column ' . $column['name'] . 'can\'t be null');
                     }
@@ -95,7 +95,7 @@ class InsertPlan implements PlanInterface
                 $columnValObj = $data[$i];
                 $columnVal = $this->extractColumnValueObj($columnValObj);
 
-                if (!$column['allow_null']) {
+                if (!$column['nullable']) {
                     if (is_null($columnVal)) {
                         throw new \Exception('Column ' . $column['name'] . ' can\'t be null');
                     }

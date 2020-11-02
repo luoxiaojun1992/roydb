@@ -43,6 +43,9 @@ class CreateTablePlan implements PlanInterface
         //todo sql校验
     }
 
+    /**
+     * @throws \Exception
+     */
     protected function extractSchema()
     {
         $stmt = $this->ast->getStmt();
