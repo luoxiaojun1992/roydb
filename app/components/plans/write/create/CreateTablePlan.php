@@ -151,6 +151,10 @@ class CreateTablePlan implements PlanInterface
             throw new \Exception('Primary key is null');
         }
 
+        if (count($this->columnsMeta) <= 0) {
+            throw new \Exception('Missing columns');
+        }
+
         $this->pk = $pk;
 
         //TODO
