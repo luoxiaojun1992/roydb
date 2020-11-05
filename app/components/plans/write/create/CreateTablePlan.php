@@ -159,6 +159,8 @@ class CreateTablePlan implements PlanInterface
 
         //TODO
         $this->schemaMeta = [
+            'engine' => 'innodb',
+            'comment' => 'test table',
             'pk' => $this->pk,
             'columns' => $this->columnsMeta,
             'index' => [
@@ -173,13 +175,16 @@ class CreateTablePlan implements PlanInterface
                     'unique' => false,
                 ],
             ],
-            'partition' => [
-                'key' => 'id',
-                'range' => [
-                    [
-                        'lower' => '',
-                        'upper' => 1000,
-                    ]
+            'partitions' => [
+                [
+                    'type' => 'range',
+                    'column' => 'id',
+                    'range' => [
+                        [
+                            'lower' => '',
+                            'upper' => 1000,
+                        ]
+                    ],
                 ],
             ],
         ];
