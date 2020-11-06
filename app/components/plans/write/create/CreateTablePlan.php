@@ -18,9 +18,11 @@ class CreateTablePlan implements PlanInterface
 
     protected $table;
 
-    protected $tableOptions;
+    protected $tableOptions = [];
 
-    protected $columns;
+    protected $partitionOptions = [];
+
+    protected $columns = [];
 
     protected $pk;
 
@@ -68,6 +70,8 @@ class CreateTablePlan implements PlanInterface
         $this->table = $table;
 
         $this->tableOptions = $this->schema['options'];
+
+        $this->partitionOptions = $this->schema['partition-options'] ?? [];
 
         $this->columns = $this->schema['create-def']['sub_tree'];
 
