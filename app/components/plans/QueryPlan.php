@@ -468,7 +468,7 @@ class QueryPlan implements PlanInterface
 
         $operands = $condition->getOperands();
         foreach ($operands as $operandIndex => $operand) {
-            if ($operand->getType() === 'colref') {
+            if ($operand->isColref()) {
                 $operandValue = $operand->getValue();
                 if (strpos($operandValue, '.')) {
                     if (array_key_exists($operandValue, $resultRow)) {

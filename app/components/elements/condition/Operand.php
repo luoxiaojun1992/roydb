@@ -44,4 +44,12 @@ class Operand
     {
         return $this->value;
     }
+
+    /**
+     * @return bool
+     */
+    public function isColref()
+    {
+        return $this->getType() === 'colref';
+    }
 }
