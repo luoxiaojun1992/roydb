@@ -69,11 +69,11 @@ class CreateTablePlan implements PlanInterface
 
         $this->table = $table;
 
-        $this->tableOptions = $this->schema['options'];
+        $this->tableOptions = $this->schema['options'] ?? [];
 
         $this->partitionOptions = $this->schema['partition-options'] ?? [];
 
-        $this->columns = $this->schema['create-def']['sub_tree'];
+        $this->columns = $this->schema['create-def']['sub_tree'] ?? [];
 
         $pk = null;
 
