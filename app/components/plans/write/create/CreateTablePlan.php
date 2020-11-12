@@ -5,6 +5,7 @@ namespace App\components\plans\write\create;
 use App\components\Ast;
 use App\components\plans\PlanInterface;
 use App\components\storage\AbstractStorage;
+use App\components\utils\datatype\Type;
 
 class CreateTablePlan implements PlanInterface
 {
@@ -44,6 +45,7 @@ class CreateTablePlan implements PlanInterface
         $this->ast = $ast;
         $this->storage = $storage;
 
+        $this->extractSchema();
         //todo sql校验
     }
 
@@ -86,6 +88,7 @@ class CreateTablePlan implements PlanInterface
             $columnLength = null;
             $columnUnsigned = null;
             $nullable = true;
+            $defaultValue = null;
 
             $attributes = $column['sub_tree'];
             foreach ($attributes as $attribute) {
@@ -98,8 +101,10 @@ class CreateTablePlan implements PlanInterface
                     foreach ($columnTypeAttrs as $columnTypeAttr) {
                         if ($columnTypeAttr['expr_type'] === 'data-type') {
                             $columnType = $columnTypeAttr['base_expr'];
-                            $columnLength = $columnTypeAttr['length'] ?? null;
+                            $columnLength = intval($columnTypeAttr['length']) ?? null;
                             $columnUnsigned = $columnTypeAttr['unsigned'] ?? null;
+                        } elseif ($columnTypeAttr['expr_type'] === 'default-value') {
+                            $defaultValue = Type::rawVal($columnTypeAttr['base_expr']);
                         }
                     }
                 }
@@ -140,6 +145,7 @@ class CreateTablePlan implements PlanInterface
                 'name' => $columnName,
                 'type' => $columnType,
                 'nullable' => $nullable,
+                'defaultValue' => $defaultValue,
             ];
 
             if (!is_null($columnLength)) {
@@ -161,9 +167,9 @@ class CreateTablePlan implements PlanInterface
 
         foreach ($this->tableOptions as $tableOption) {
             if ($tableOption['expr_type'] === 'character-set') {
-                foreach ($tableOption['sub_tree'] as $expr) {
-                    if ($expr['expr_type'] === 'const') {
-                        $characterSet = $expr['base_expr'];
+                foreach ($tableOption['sub_tree'] as $charSetExpr) {
+                    if ($charSetExpr['expr_type'] === 'const') {
+                        $characterSet = $charSetExpr['base_expr'];
                     }
                 }
             } elseif ($tableOption['expr_type'] === 'expression') {
@@ -188,25 +194,49 @@ class CreateTablePlan implements PlanInterface
             }
         }
 
-        $partition = [];
+        $partitionMeta = [];
 
         foreach ($this->partitionOptions as $partitionOption) {
-            //TODO
             if ($partitionOption['expr_type'] === 'partition') {
-                $partition['type'] = strtolower($partitionOption['by']);
+                $partitionMeta['type'] = strtolower($partitionOption['by']);
             } elseif ($partitionOption['expr_type'] === 'partition-range') {
-                foreach ($partitionOption['sub_tree'] as $expr) {
-                    if ($expr['expr_type'] === 'bracket_expression') {
-                        foreach ($expr['sub_tree'] as $column) {
-                            $partition['column'] = $column['base_expr'];
+                foreach ($partitionOption['sub_tree'] as $rangeExpr) {
+                    if ($rangeExpr['expr_type'] === 'bracket_expression') {
+                        foreach ($rangeExpr['sub_tree'] as $column) {
+                            $partitionMeta['column'] = $column['base_expr'];
                             break;
                         }
                     }
                 }
             } elseif ($partitionOption['expr_type'] === 'bracket_expression') {
-                //TODO
+                $prevRangeBound = '';
+                foreach ($partitionOption['sub_tree'] as $partition) {
+                    if ($partition['expr_type'] === 'partition-def') {
+                        $partitionPart = [];
+                        foreach ($partition['sub_tree'] as $defExpr) {
+                            if ($defExpr['expr_type'] === 'reserved') {
+                                if ($defExpr['base_expr'] === 'partition') {
+                                    $partitionPart['name'] = $defExpr['name'];
+                                }
+                            } elseif ($defExpr['expr_type'] === 'partition-values') {
+                                foreach ($defExpr['sub_tree'] as $partitionValue) {
+                                    foreach ($partitionValue as $pValExpr) {
+                                        if ($pValExpr['expr_type'] === 'bracket_expression') {
+                                            $partitionPart['lower'] = $prevRangeBound;
+                                            $upper = $prevRangeBound = Type::rawVal($pValExpr['base_expr']);
+                                            $partitionPart['upper'] = $upper;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        $partitionMeta['parts'][] = $partitionPart;
+                    }
+                }
             }
         }
+
+        $this->partitions[] = $partitionMeta;
 
         //TODO
         $this->schemaMeta = [
@@ -227,24 +257,14 @@ class CreateTablePlan implements PlanInterface
                     'unique' => false,
                 ],
             ],
-            'partitions' => [
-                [
-                    'type' => 'range',
-                    'column' => 'id',
-                    'range' => [
-                        [
-                            'lower' => '',
-                            'upper' => 1000,
-                        ]
-                    ],
-                ],
-            ],
+            'partitions' => $this->partitions,
         ];
     }
 
     public function execute()
     {
         var_dump($this->ast);
+        var_dump($this->schemaMeta);
         return false;
 
         // TODO: Implement execute() method.
