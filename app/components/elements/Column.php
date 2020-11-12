@@ -4,6 +4,16 @@ namespace App\components\elements;
 
 class Column
 {
+    const DATA_TYPE_VARCHAR = 'varchar';
+    const DATA_TYPE_CHAR = 'char';
+    const DATA_TYPE_INT = 'int';
+
+    const DATA_TYPES_WITH_LENGTH = [
+        self::DATA_TYPE_VARCHAR,
+        self::DATA_TYPE_CHAR,
+        self::DATA_TYPE_INT,
+    ];
+
     protected $type;
 
     protected $value;

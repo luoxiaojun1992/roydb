@@ -3,6 +3,7 @@
 namespace App\components\plans\write\create;
 
 use App\components\Ast;
+use App\components\elements\Column;
 use App\components\plans\PlanInterface;
 use App\components\storage\AbstractStorage;
 use App\components\utils\datatype\Type;
@@ -120,7 +121,7 @@ class CreateTablePlan implements PlanInterface
                 throw new \Exception('Invalid column type');
             }
 
-            if (in_array($columnType, ['varchar', 'char', 'int'])) {
+            if (in_array($columnType, Column::DATA_TYPES_WITH_LENGTH)) {
                 if (is_null($columnLength)) {
                     throw new \Exception('Missing column length');
                 }
