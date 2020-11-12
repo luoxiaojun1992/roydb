@@ -151,20 +151,50 @@ class CreateTablePlan implements PlanInterface
             $this->columnsMeta[] = $columnsMeta;
         }
 
-        if (is_null($pk)) {
-            throw new \Exception('Primary key is null');
-        }
-
-        if (count($this->columnsMeta) <= 0) {
-            throw new \Exception('Missing columns');
-        }
-
         $this->pk = $pk;
+
+        $characterSet = null;
+        $engine = null;
+        $comment = null;
+
+        foreach ($this->tableOptions as $tableOption) {
+            if ($tableOption['expr_type'] === 'character-set') {
+                foreach ($tableOption['sub_tree'] as $expr) {
+                    if ($expr['expr_type'] === 'const') {
+                        $characterSet = $expr['base_expr'];
+                    }
+                }
+            } elseif ($tableOption['expr_type'] === 'expression') {
+                $optionType = null;
+                $optionValue = null;
+                foreach ($tableOption['sub_tree'] as $expr) {
+                    if ($expr['expr_type'] === 'reserved') {
+                        if ($expr['base_expr'] === 'engine') {
+                            $optionType = 'engine';
+                        } elseif ($expr['base_expr'] === 'comment') {
+                            $optionType = 'comment';
+                        }
+                    } elseif ($expr['expr_type'] === 'const') {
+                        $optionValue = $expr['base_expr'];
+                    }
+                }
+                if ($optionType === 'engine') {
+                    $engine = $optionValue;
+                } elseif ($optionType === 'comment') {
+                    $comment = $optionValue;
+                }
+            }
+        }
+
+        foreach ($this->partitionOptions as $partitionOption) {
+            //TODO
+        }
 
         //TODO
         $this->schemaMeta = [
-            'engine' => 'innodb',
-            'comment' => 'test table',
+            'engine' => $engine,
+            'comment' => $comment,
+            'character_set' => $characterSet,
             'pk' => $this->pk,
             'columns' => $this->columnsMeta,
             'index' => [
