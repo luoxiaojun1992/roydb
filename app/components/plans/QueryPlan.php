@@ -15,6 +15,7 @@ use App\components\math\OperatorHandler;
 use App\components\storage\AbstractStorage;
 use App\components\udf\Aggregate;
 use App\components\udf\Math;
+use App\components\utils\datatype\Type;
 use Co\Channel;
 
 class QueryPlan implements PlanInterface
@@ -214,36 +215,7 @@ class QueryPlan implements PlanInterface
                 }
             } elseif ($expr['expr_type'] === 'const') {
                 $constExpr = $expr['base_expr'];
-                $isString = false;
-                if (strpos($constExpr, '"') === 0) {
-                    $constExpr = substr($constExpr, 1);
-                    $isString = true;
-                } elseif (strpos($constExpr, '\'') === 0) {
-                    $constExpr = substr($constExpr, 1);
-                    $isString = true;
-                }
-                if (strpos($constExpr, '"') === (strlen($constExpr) - 1)) {
-                    $constExpr = substr($constExpr, 0, -1);
-                    $isString = true;
-                } elseif (strpos($constExpr, '\'') === (strlen($constExpr) - 1)) {
-                    $constExpr = substr($constExpr, 0, -1);
-                    $isString = true;
-                }
-                if (!$isString) {
-                    if (is_numeric($constExpr) && (strpos($constExpr, '.') !== false)) {
-                        if (strpos($constExpr, '.') !== false) {
-                            $constExpr = doubleval($constExpr);
-                        } else {
-                            $constExpr = intval($constExpr);
-                        }
-                    } elseif ($constExpr === 'true') {
-                        $constExpr = true;
-                    } elseif ($constExpr === 'false') {
-                        $constExpr = false;
-                    } elseif ($constExpr === 'null') {
-                        $constExpr = null;
-                    }
-                }
+                $constExpr = Type::rawVal($constExpr);
                 $condition->addOperands(
                     (new Operand())->setType('const')->setValue($constExpr)
                 );

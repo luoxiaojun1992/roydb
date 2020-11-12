@@ -5,6 +5,7 @@ namespace App\components\plans;
 use App\components\Ast;
 use App\components\elements\Column;
 use App\components\storage\AbstractStorage;
+use App\components\utils\datatype\Type;
 
 class InsertPlan implements PlanInterface
 {
@@ -117,38 +118,7 @@ class InsertPlan implements PlanInterface
         $columnVal = null;
         if ($columnValObj['expr_type'] === 'const') {
             $columnVal = $columnValObj['base_expr'];
-
-            $isString = false;
-            if (strpos($columnVal, '"') === 0) {
-                $columnVal = substr($columnVal, 1);
-                $isString = true;
-            } elseif (strpos($columnVal, '\'') === 0) {
-                $columnVal = substr($columnVal, 1);
-                $isString = true;
-            }
-            if (strpos($columnVal, '"') === (strlen($columnVal) - 1)) {
-                $columnVal = substr($columnVal, 0, -1);
-                $isString = true;
-            } elseif (strpos($columnVal, '\'') === (strlen($columnVal) - 1)) {
-                $columnVal = substr($columnVal, 0, -1);
-                $isString = true;
-            }
-
-            if (!$isString) {
-                if (is_numeric($columnVal)) {
-                    if ((strpos($columnVal, '.') !== false)) {
-                        $columnVal = doubleval($columnVal);
-                    } else {
-                        $columnVal = intval($columnVal);
-                    }
-                } elseif ($columnVal === 'true') {
-                    $columnVal = true;
-                } elseif ($columnVal === 'false') {
-                    $columnVal = false;
-                } elseif ($columnVal === 'null') {
-                    $columnVal = null;
-                }
-            }
+            $columnVal = Type::rawVal($columnVal);
         } else {
             //todo udf...
         }
