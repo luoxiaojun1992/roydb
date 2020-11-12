@@ -1,10 +1,10 @@
 <?php
 
-namespace App\components\utils;
+namespace App\components\utils\datatype;
 
 class Str
 {
-    public static function rawStr(string $quotedStr)
+    public static function rawVal(string $quotedStr)
     {
         if (strpos($quotedStr, '"') === 0) {
             $quotedStr = substr($quotedStr, 1);
