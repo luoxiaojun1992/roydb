@@ -29,9 +29,11 @@ class CreateTablePlan implements PlanInterface
 
     protected $columnsMeta = [];
 
-    protected $schemaMeta = [];
+    protected $index = [];
 
     protected $partitions = [];
+
+    protected $schemaMeta = [];
 
     /**
      * InsertPlan constructor.
@@ -238,25 +240,14 @@ class CreateTablePlan implements PlanInterface
 
         $this->partitions[] = $partitionMeta;
 
-        //TODO
+        //TODO index(name、columns、unique)
         $this->schemaMeta = [
             'engine' => $engine,
             'comment' => $comment,
             'character_set' => $characterSet,
             'pk' => $this->pk,
             'columns' => $this->columnsMeta,
-            'index' => [
-                [
-                    'name' => 'type',
-                    'columns' => ['type'],
-                    'unique' => false,
-                ],
-                [
-                    'name' => 'name',
-                    'columns' => ['name'],
-                    'unique' => false,
-                ],
-            ],
+            'index' => $this->index,
             'partitions' => $this->partitions,
         ];
     }
