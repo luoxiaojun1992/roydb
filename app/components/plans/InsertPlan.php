@@ -122,17 +122,25 @@ class InsertPlan implements PlanInterface
             if (strpos($columnVal, '"') === 0) {
                 $columnVal = substr($columnVal, 1);
                 $isString = true;
+            } elseif (strpos($columnVal, '\'') === 0) {
+                $columnVal = substr($columnVal, 1);
+                $isString = true;
             }
             if (strpos($columnVal, '"') === (strlen($columnVal) - 1)) {
+                $columnVal = substr($columnVal, 0, -1);
+                $isString = true;
+            } elseif (strpos($columnVal, '\'') === (strlen($columnVal) - 1)) {
                 $columnVal = substr($columnVal, 0, -1);
                 $isString = true;
             }
 
             if (!$isString) {
-                if (ctype_digit($columnVal)) {
-                    $columnVal = intval($columnVal);
-                } elseif (is_numeric($columnVal) && (strpos($columnVal, '.') !== false)) {
-                    $columnVal = doubleval($columnVal);
+                if (is_numeric($columnVal)) {
+                    if ((strpos($columnVal, '.') !== false)) {
+                        $columnVal = doubleval($columnVal);
+                    } else {
+                        $columnVal = intval($columnVal);
+                    }
                 } elseif ($columnVal === 'true') {
                     $columnVal = true;
                 } elseif ($columnVal === 'false') {

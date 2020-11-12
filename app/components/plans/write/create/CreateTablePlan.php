@@ -30,6 +30,8 @@ class CreateTablePlan implements PlanInterface
 
     protected $schemaMeta = [];
 
+    protected $partitions = [];
+
     /**
      * InsertPlan constructor.
      * @param Ast $ast
@@ -186,8 +188,24 @@ class CreateTablePlan implements PlanInterface
             }
         }
 
+        $partition = [];
+
         foreach ($this->partitionOptions as $partitionOption) {
             //TODO
+            if ($partitionOption['expr_type'] === 'partition') {
+                $partition['type'] = strtolower($partitionOption['by']);
+            } elseif ($partitionOption['expr_type'] === 'partition-range') {
+                foreach ($partitionOption['sub_tree'] as $expr) {
+                    if ($expr['expr_type'] === 'bracket_expression') {
+                        foreach ($expr['sub_tree'] as $column) {
+                            $partition['column'] = $column['base_expr'];
+                            break;
+                        }
+                    }
+                }
+            } elseif ($partitionOption['expr_type'] === 'bracket_expression') {
+                //TODO
+            }
         }
 
         //TODO

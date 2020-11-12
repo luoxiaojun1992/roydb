@@ -218,16 +218,24 @@ class QueryPlan implements PlanInterface
                 if (strpos($constExpr, '"') === 0) {
                     $constExpr = substr($constExpr, 1);
                     $isString = true;
+                } elseif (strpos($constExpr, '\'') === 0) {
+                    $constExpr = substr($constExpr, 1);
+                    $isString = true;
                 }
                 if (strpos($constExpr, '"') === (strlen($constExpr) - 1)) {
                     $constExpr = substr($constExpr, 0, -1);
                     $isString = true;
+                } elseif (strpos($constExpr, '\'') === (strlen($constExpr) - 1)) {
+                    $constExpr = substr($constExpr, 0, -1);
+                    $isString = true;
                 }
                 if (!$isString) {
-                    if (ctype_digit($constExpr)) {
-                        $constExpr = intval($constExpr);
-                    } elseif (is_numeric($constExpr) && (strpos($constExpr, '.') !== false)) {
-                        $constExpr = doubleval($constExpr);
+                    if (is_numeric($constExpr) && (strpos($constExpr, '.') !== false)) {
+                        if (strpos($constExpr, '.') !== false) {
+                            $constExpr = doubleval($constExpr);
+                        } else {
+                            $constExpr = intval($constExpr);
+                        }
                     } elseif ($constExpr === 'true') {
                         $constExpr = true;
                     } elseif ($constExpr === 'false') {

@@ -1272,7 +1272,17 @@ abstract class KvStorage extends AbstractStorage
                     $offsetLimitCount = $offset + $limitCount;
                 }
 
-                if ((!$usingPrimaryIndex) || ($field === $this->getPrimaryKeyBySchema($schema))) {
+                if ($usingPrimaryIndex) {
+                    if ($field === $this->getPrimaryKeyBySchema($schema)) {
+                        $indexHint = true;
+                    } else {
+                        $indexHint = false;
+                    }
+                } else {
+                    $indexHint = true;
+                }
+
+                if ($indexHint) {
                     if ($conditionOperator === '=') {
                         if (!$isNot) {
                             $itStart = $conditionValue;
@@ -1640,7 +1650,16 @@ abstract class KvStorage extends AbstractStorage
                     $offsetLimitCount = $offset + $limitCount;
                 }
 
-                if ((!$usingPrimaryIndex) || ($operandValue1 === $this->getPrimaryKeyBySchema($schema))) {
+                if ($usingPrimaryIndex) {
+                    if ($operandValue1 === $this->getPrimaryKeyBySchema($schema)) {
+                        $indexHint = true;
+                    } else {
+                        $indexHint = false;
+                    }
+                } else {
+                    $indexHint = true;
+                }
+                if ($indexHint) {
                     if ($isNot) {
                         $splitConditionTree = new ConditionTree();
                         $splitConditionTree->setLogicOperator('and')
