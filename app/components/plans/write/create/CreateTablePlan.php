@@ -30,7 +30,7 @@ class CreateTablePlan implements PlanInterface
 
     protected $columnsMeta = [];
 
-    protected $index = [];
+    protected $indicies = [];
 
     protected $partitions = [];
 
@@ -252,7 +252,7 @@ class CreateTablePlan implements PlanInterface
             'character_set' => $characterSet,
             'pk' => $this->pk,
             'columns' => $this->columnsMeta,
-            'index' => $this->index,
+            'index' => $this->indicies,
             'partitions' => $this->partitions,
         ];
     }
