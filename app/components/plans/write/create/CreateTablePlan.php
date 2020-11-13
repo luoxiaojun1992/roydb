@@ -162,7 +162,22 @@ class CreateTablePlan implements PlanInterface
 
                 $this->columnsMeta[] = $columnsMeta;
             } elseif ($column['expr_type'] === 'index') {
-                //TODO
+                $index = [];
+                foreach ($column['sub_tree'] as $indexExpr) {
+                    if ($indexExpr['expr_type'] === 'const') {
+                        $index['name'] = $indexExpr['base_expr'];
+                    } elseif ($indexExpr['expr_type'] === 'column-list') {
+                        foreach ($indexExpr['sub_tree'] as $indexCol) {
+                            //TODO length unique
+                            if ($indexCol['expr_type'] === 'index-column') {
+                                $index['columns'][] = [
+                                    'name' => $indexCol['name'],
+                                ];
+                            }
+                        }
+                    }
+                }
+                $this->indicies[] = $index;
             }
         }
 
