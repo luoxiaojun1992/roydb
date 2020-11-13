@@ -48,7 +48,7 @@ class CreateTablePlan implements PlanInterface
         $this->ast = $ast;
         $this->storage = $storage;
 
-        $this->extractSchema();
+//        $this->extractSchema();
         //todo sql校验
     }
 
@@ -85,57 +85,58 @@ class CreateTablePlan implements PlanInterface
         $pk = null;
 
         foreach ($this->columns as $column) {
-            $columnName = null;
-            $isPk = false;
-            $columnType = null;
-            $columnLength = null;
-            $columnUnsigned = null;
-            $nullable = true;
-            $defaultValue = null;
+            if ($column['expr_type'] === 'column-def') {
+                $columnName = null;
+                $isPk = false;
+                $columnType = null;
+                $columnLength = null;
+                $columnUnsigned = null;
+                $nullable = true;
+                $defaultValue = null;
 
-            $attributes = $column['sub_tree'];
-            foreach ($attributes as $attribute) {
-                if ($attribute['expr_type'] === 'colref') {
-                    $columnName = $attribute['base_expr'];
-                } elseif ($attribute['expr_type'] === 'column-type') {
-                    $isPk = $attribute['primary'];
-                    $nullable = $attribute['nullable'];
-                    $columnTypeAttrs = $attribute['sub_tree'];
-                    foreach ($columnTypeAttrs as $columnTypeAttr) {
-                        if ($columnTypeAttr['expr_type'] === 'data-type') {
-                            $columnType = $columnTypeAttr['base_expr'];
-                            $columnLength = intval($columnTypeAttr['length']) ?? null;
-                            $columnUnsigned = $columnTypeAttr['unsigned'] ?? null;
-                        } elseif ($columnTypeAttr['expr_type'] === 'default-value') {
-                            $defaultValue = Type::rawVal($columnTypeAttr['base_expr']);
+                $attributes = $column['sub_tree'];
+                foreach ($attributes as $attribute) {
+                    if ($attribute['expr_type'] === 'colref') {
+                        $columnName = $attribute['base_expr'];
+                    } elseif ($attribute['expr_type'] === 'column-type') {
+                        $isPk = $attribute['primary'];
+                        $nullable = $attribute['nullable'];
+                        $columnTypeAttrs = $attribute['sub_tree'];
+                        foreach ($columnTypeAttrs as $columnTypeAttr) {
+                            if ($columnTypeAttr['expr_type'] === 'data-type') {
+                                $columnType = $columnTypeAttr['base_expr'];
+                                $columnLength = intval($columnTypeAttr['length']) ?? null;
+                                $columnUnsigned = $columnTypeAttr['unsigned'] ?? null;
+                            } elseif ($columnTypeAttr['expr_type'] === 'default-value') {
+                                $defaultValue = Type::rawVal($columnTypeAttr['base_expr']);
+                            }
                         }
                     }
                 }
-            }
 
-            if (is_null($columnName)) {
-                throw new \Exception('Missing column name');
-            }
-
-            if (!in_array($columnType, ['varchar', 'char', 'int', 'double', 'decimal'])) {
-                throw new \Exception('Invalid column type');
-            }
-
-            if (in_array($columnType, Column::DATA_TYPES_WITH_LENGTH)) {
-                if (is_null($columnLength)) {
-                    throw new \Exception('Missing column length');
+                if (is_null($columnName)) {
+                    throw new \Exception('Missing column name');
                 }
-            }
 
-            if (in_array($columnType, ['int', 'double', 'decimal'])) {
-                if (is_null($columnUnsigned)) {
-                    throw new \Exception('Missing column sign');
+                if (!in_array($columnType, ['varchar', 'char', 'int', 'double', 'decimal'])) {
+                    throw new \Exception('Invalid column type');
                 }
-            }
 
-            if ($isPk) {
-                $pk = $columnName;
-            }
+                if (in_array($columnType, Column::DATA_TYPES_WITH_LENGTH)) {
+                    if (is_null($columnLength)) {
+                        throw new \Exception('Missing column length');
+                    }
+                }
+
+                if (in_array($columnType, ['int', 'double', 'decimal'])) {
+                    if (is_null($columnUnsigned)) {
+                        throw new \Exception('Missing column sign');
+                    }
+                }
+
+                if ($isPk) {
+                    $pk = $columnName;
+                }
 
 //            [
 //                'name' => 'id',
@@ -144,22 +145,25 @@ class CreateTablePlan implements PlanInterface
 //                'default' => null,
 //                'allow_null' => false,
 //            ]
-            $columnsMeta = [
-                'name' => $columnName,
-                'type' => $columnType,
-                'nullable' => $nullable,
-                'defaultValue' => $defaultValue,
-            ];
+                $columnsMeta = [
+                    'name' => $columnName,
+                    'type' => $columnType,
+                    'nullable' => $nullable,
+                    'defaultValue' => $defaultValue,
+                ];
 
-            if (!is_null($columnLength)) {
-                $columnsMeta['length'] = $columnLength;
+                if (!is_null($columnLength)) {
+                    $columnsMeta['length'] = $columnLength;
+                }
+
+                if (!is_null($columnUnsigned)) {
+                    $columnsMeta['unsigned'] = $columnUnsigned;
+                }
+
+                $this->columnsMeta[] = $columnsMeta;
+            } elseif ($column['expr_type'] === 'index') {
+                //TODO
             }
-
-            if (!is_null($columnUnsigned)) {
-                $columnsMeta['unsigned'] = $columnUnsigned;
-            }
-
-            $this->columnsMeta[] = $columnsMeta;
         }
 
         $this->pk = $pk;

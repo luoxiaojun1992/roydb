@@ -33,7 +33,7 @@ class Plan
     /** @var AbstractStorage */
     protected $storage;
 
-    /** @var QueryPlan|InsertPlan */
+    /** @var QueryPlan|InsertPlan|UpdatePlan|CreateTablePlan */
     protected $executionPlan;
 
     protected $txnId;
