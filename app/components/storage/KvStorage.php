@@ -382,7 +382,7 @@ abstract class KvStorage extends AbstractStorage
             $conditionOperator = $condition->getOperator();
             $operands = $condition->getOperands();
 
-            if (in_array($conditionOperator, ['<', '<=', '=', '>', '>='])) {
+            if (in_array($conditionOperator, ['<', '<=', '=', '>', '>='], true)) {
                 $operandValue1 = $operands[0]->getValue();
                 $operandType1 = $operands[0]->getType();
                 if ($operandType1 === 'colref') {
@@ -581,7 +581,7 @@ abstract class KvStorage extends AbstractStorage
             $conditionOperator = $condition->getOperator();
             $operands = $condition->getOperands();
 
-            if (in_array($conditionOperator, ['<', '<=', '=', '>', '>='])) {
+            if (in_array($conditionOperator, ['<', '<=', '=', '>', '>='], true)) {
                 $operandValue1 = $operands[0]->getValue();
                 $operandType1 = $operands[0]->getType();
                 if ($operandType1 === 'colref') {
@@ -684,11 +684,11 @@ abstract class KvStorage extends AbstractStorage
             if ($operandSchema !== $schema) {
                 return false;
             }
-            if (!in_array($colName, $schemaColumns)) {
+            if (!in_array($colName, $schemaColumns, true)) {
                 throw new \Exception($colName . ' is not column of ' . $schema);
             }
         } else {
-            if (!in_array($colName, $schemaColumns)) {
+            if (!in_array($colName, $schemaColumns, true)) {
                 return false;
             }
         }
@@ -1190,7 +1190,7 @@ abstract class KvStorage extends AbstractStorage
                                     if (count($subIndexData) > 0) {
                                         $indexColumns = array_keys($subIndexData[0]);
                                         if (is_null($usedColumns) ||
-                                            in_array('*', $usedColumns) ||
+                                            in_array('*', $usedColumns, true) ||
                                             (count(array_diff($usedColumns, $indexColumns)) > 0)
                                         ) {
                                             $subIndexData = $this->fetchAllColumnsByIndexData($subIndexData, $schema);
@@ -1366,7 +1366,7 @@ abstract class KvStorage extends AbstractStorage
                             if (count($subIndexData) > 0) {
                                 $indexColumns = array_keys($subIndexData[0]);
                                 if (is_null($usedColumns) ||
-                                    in_array('*', $usedColumns) ||
+                                    in_array('*', $usedColumns, true) ||
                                     (count(array_diff($usedColumns, $indexColumns)) > 0)
                                 ) {
                                     $subIndexData = $this->fetchAllColumnsByIndexData($subIndexData, $schema);
@@ -1570,7 +1570,7 @@ abstract class KvStorage extends AbstractStorage
                                     if (count($subIndexData) > 0) {
                                         $indexColumns = array_keys($subIndexData[0]);
                                         if (is_null($usedColumns) ||
-                                            in_array('*', $usedColumns) ||
+                                            in_array('*', $usedColumns, true) ||
                                             (count(array_diff($usedColumns, $indexColumns)) > 0)
                                         ) {
                                             $subIndexData = $this->fetchAllColumnsByIndexData($subIndexData, $schema);
@@ -1738,7 +1738,7 @@ abstract class KvStorage extends AbstractStorage
                             if (count($subIndexData) > 0) {
                                 $indexColumns = array_keys($subIndexData[0]);
                                 if (is_null($usedColumns) ||
-                                    in_array('*', $usedColumns) ||
+                                    in_array('*', $usedColumns, true) ||
                                     (count(array_diff($usedColumns, $indexColumns)) > 0)
                                 ) {
                                     $subIndexData = $this->fetchAllColumnsByIndexData($subIndexData, $schema);
@@ -1825,7 +1825,7 @@ abstract class KvStorage extends AbstractStorage
         }
 
         $conditionOperator = $condition->getOperator();
-        if (in_array($conditionOperator, ['<', '<=', '=', '>', '>='])) {
+        if (in_array($conditionOperator, ['<', '<=', '=', '>', '>='], true)) {
             $result = $this->filterBasicCompareCondition(
                 $schema, $rootCondition, $condition, $limit, $indexSuggestions, $isNot, $usedColumns
             );
@@ -2125,7 +2125,7 @@ abstract class KvStorage extends AbstractStorage
 
         $idMap = [];
         foreach ($result as $i => $row) {
-            if (in_array($row['id'], $idMap)) {
+            if (in_array($row['id'], $idMap, true)) {
                 unset($result[$i]);
             } else {
                 $idMap[] = $row['id'];
@@ -2230,7 +2230,7 @@ abstract class KvStorage extends AbstractStorage
 
         $pIndex = $this->getKvClient();
         foreach ($rows as $row) {
-            if (in_array($row[$pk], $existedRowsPkList)) {
+            if (in_array($row[$pk], $existedRowsPkList, true)) {
                 continue;
             }
 
@@ -2288,7 +2288,7 @@ abstract class KvStorage extends AbstractStorage
                 } else {
                     $indexRows = json_decode($indexData, true);
 
-                    if (in_array($row[$pk], array_column($indexRows, $pk))) {
+                    if (in_array($row[$pk], array_column($indexRows, $pk), true)) {
                         return false;
                     }
 

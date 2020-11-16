@@ -153,7 +153,7 @@ class QueryPlan implements PlanInterface
                     (new Operand())->setType('colref')->setValue($expr['base_expr'])
                 );
             } elseif ($expr['expr_type'] === ExpressionType::OPERATOR) {
-                if (!in_array($expr['base_expr'], ['and', 'or', 'not'])) {
+                if (!in_array($expr['base_expr'], ['and', 'or', 'not'], true)) {
                     $condition->setOperator($expr['base_expr']);
                 } else {
                     if ($expr['base_expr'] === 'not') {
@@ -1175,7 +1175,7 @@ class QueryPlan implements PlanInterface
                     ->setAlias($column->getAlias());
 
                 foreach ($resultSet as $rowIndex => $row) {
-                    if (in_array($udfName, UDF::AGGREGATE_UDF)) {
+                    if (in_array($udfName, UDF::AGGREGATE_UDF, true)) {
                         if ((!is_object($row)) || (!($row instanceof Aggregation))) {
                             $resultSet = [(new Aggregation())->setRows($resultSet)];
                         }

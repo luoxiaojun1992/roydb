@@ -432,7 +432,7 @@ class Txn
         $txnStatus = $this->getStatus();
         $txnTs = $this->getTs();
 
-        if (!in_array($txnStatus, [TxnConst::STATUS_ACTIVE, TxnConst::STATUS_COMMITTED])) {
+        if (!in_array($txnStatus, [TxnConst::STATUS_ACTIVE, TxnConst::STATUS_COMMITTED], true)) {
             throw new \Exception(
                 'Txn[' . ((string)$txnTs) . '] status[' . ((string)$txnStatus) .
                 '] not allowed for committing'
@@ -531,7 +531,7 @@ class Txn
         $txnStatus = $this->getStatus();
         $txnTs = $this->getTs();
 
-        if (!in_array($txnStatus, [TxnConst::STATUS_ACTIVE, TxnConst::STATUS_CANCELED])) {
+        if (!in_array($txnStatus, [TxnConst::STATUS_ACTIVE, TxnConst::STATUS_CANCELED], true)) {
             throw new \Exception(
                 'Txn[' . ((string)$txnTs) . '] status[' . ((string)$txnStatus) .
                 '] not allowed for rollback'

@@ -82,7 +82,7 @@ class Column
 
     public function isUdf()
     {
-        return in_array($this->getType(), ['aggregate_function', 'function']);
+        return in_array($this->getType(), ['aggregate_function', 'function'], true);
     }
 
     public function isColref()

@@ -118,7 +118,7 @@ class Type
         $isBool = false;
 
         if (is_string($val)) {
-            if (in_array(strtolower($val), ['true', 'false'])) {
+            if (in_array(strtolower($val), ['true', 'false'], true)) {
                 $isBool = true;
             }
         }
@@ -135,7 +135,7 @@ class Type
         $isNull = false;
 
         if (is_string($val)) {
-            if (in_array(strtolower($val), ['null'])) {
+            if (in_array(strtolower($val), ['null'], true)) {
                 $isNull = true;
             }
         }
