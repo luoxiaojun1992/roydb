@@ -8,6 +8,7 @@ use App\components\optimizers\RulesBasedOptimizer;
 use App\components\Parser;
 use App\components\storage\AbstractStorage;
 use PHPSQLParser\PHPSQLCreator;
+use PHPSQLParser\utils\ExpressionType;
 
 class DeletePlan implements PlanInterface
 {
@@ -58,7 +59,7 @@ class DeletePlan implements PlanInterface
             $table = $schema['table'];
             $schemaMeta = $this->storage->getSchemaMetaData($table);
             $columns[] = [
-                'expr_type' => 'colref',
+                'expr_type' => ExpressionType::COLREF,
                 'alias' => false,
                 'base_expr' => $table . '.' . $schemaMeta['pk'],
                 'sub_tree' => false,

@@ -17,6 +17,7 @@ use App\components\udf\Aggregate;
 use App\components\udf\Math;
 use App\components\utils\datatype\Type;
 use Co\Channel;
+use PHPSQLParser\utils\ExpressionType;
 
 class QueryPlan implements PlanInterface
 {
@@ -147,11 +148,11 @@ class QueryPlan implements PlanInterface
         $conditionTree = new ConditionTree();
         $condition = new Condition();
         foreach ($conditionExpr as $expr) {
-            if (($expr['expr_type'] === 'colref') || ($expr['expr_type'] === 'alias')) {
+            if (($expr['expr_type'] === ExpressionType::COLREF) || ($expr['expr_type'] === ExpressionType::ALIAS)) {
                 $condition->addOperands(
                     (new Operand())->setType('colref')->setValue($expr['base_expr'])
                 );
-            } elseif ($expr['expr_type'] === 'operator') {
+            } elseif ($expr['expr_type'] === ExpressionType::OPERATOR) {
                 if (!in_array($expr['base_expr'], ['and', 'or', 'not'])) {
                     $condition->setOperator($expr['base_expr']);
                 } else {
@@ -213,7 +214,7 @@ class QueryPlan implements PlanInterface
                         }
                     }
                 }
-            } elseif ($expr['expr_type'] === 'const') {
+            } elseif ($expr['expr_type'] === ExpressionType::CONSTANT) {
                 $constExpr = $expr['base_expr'];
                 $constExpr = Type::rawVal($constExpr);
                 $condition->addOperands(

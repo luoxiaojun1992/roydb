@@ -6,6 +6,7 @@ use App\components\Ast;
 use App\components\elements\Column;
 use App\components\storage\AbstractStorage;
 use App\components\utils\datatype\Type;
+use PHPSQLParser\utils\ExpressionType;
 
 class InsertPlan implements PlanInterface
 {
@@ -116,7 +117,7 @@ class InsertPlan implements PlanInterface
     protected function extractColumnValueObj($columnValObj)
     {
         $columnVal = null;
-        if ($columnValObj['expr_type'] === 'const') {
+        if ($columnValObj['expr_type'] === ExpressionType::CONSTANT) {
             $columnVal = $columnValObj['base_expr'];
             $columnVal = Type::rawVal($columnVal);
         } else {

@@ -11,6 +11,7 @@ use App\components\Parser;
 use App\components\storage\AbstractStorage;
 use App\components\utils\datatype\Type;
 use PHPSQLParser\PHPSQLCreator;
+use PHPSQLParser\utils\ExpressionType;
 
 class UpdatePlan implements PlanInterface
 {
@@ -97,7 +98,7 @@ class UpdatePlan implements PlanInterface
             $table = $schema['table'];
             $schemaMeta = $this->storage->getSchemaMetaData($table);
             $schemas[] = [
-                'expr_type' => 'colref',
+                'expr_type' => ExpressionType::COLREF,
                 'alias' => false,
                 'base_expr' => $table . '.' . $schemaMeta['pk'],
                 'sub_tree' => false,
@@ -173,7 +174,7 @@ class UpdatePlan implements PlanInterface
     protected function extractColumnValueObj($columnValObj)
     {
         $columnVal = null;
-        if ($columnValObj['expr_type'] === 'const') {
+        if ($columnValObj['expr_type'] === ExpressionType::CONSTANT) {
             $columnVal = $columnValObj['base_expr'];
             $columnVal = Type::rawVal($columnVal);
         } else {

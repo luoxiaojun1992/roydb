@@ -7,6 +7,7 @@ use App\components\elements\Column;
 use App\components\plans\PlanInterface;
 use App\components\storage\AbstractStorage;
 use App\components\utils\datatype\Type;
+use PHPSQLParser\utils\ExpressionType;
 
 class CreateTablePlan implements PlanInterface
 {
@@ -85,7 +86,7 @@ class CreateTablePlan implements PlanInterface
         $pk = null;
 
         foreach ($this->columns as $column) {
-            if ($column['expr_type'] === 'column-def') {
+            if ($column['expr_type'] === ExpressionType::COLDEF) {
                 $columnName = null;
                 $isPk = false;
                 $columnType = null;
@@ -96,18 +97,18 @@ class CreateTablePlan implements PlanInterface
 
                 $attributes = $column['sub_tree'];
                 foreach ($attributes as $attribute) {
-                    if ($attribute['expr_type'] === 'colref') {
+                    if ($attribute['expr_type'] === ExpressionType::COLREF) {
                         $columnName = $attribute['base_expr'];
-                    } elseif ($attribute['expr_type'] === 'column-type') {
+                    } elseif ($attribute['expr_type'] === ExpressionType::COLUMN_TYPE) {
                         $isPk = $attribute['primary'];
                         $nullable = $attribute['nullable'];
                         $columnTypeAttrs = $attribute['sub_tree'];
                         foreach ($columnTypeAttrs as $columnTypeAttr) {
-                            if ($columnTypeAttr['expr_type'] === 'data-type') {
+                            if ($columnTypeAttr['expr_type'] === ExpressionType::DATA_TYPE) {
                                 $columnType = $columnTypeAttr['base_expr'];
                                 $columnLength = intval($columnTypeAttr['length']) ?? null;
                                 $columnUnsigned = $columnTypeAttr['unsigned'] ?? null;
-                            } elseif ($columnTypeAttr['expr_type'] === 'default-value') {
+                            } elseif ($columnTypeAttr['expr_type'] === ExpressionType::DEF_VALUE) {
                                 $defaultValue = Type::rawVal($columnTypeAttr['base_expr']);
                             }
                         }
@@ -154,17 +155,17 @@ class CreateTablePlan implements PlanInterface
                 }
 
                 $this->columnsMeta[] = $columnsMeta;
-            } elseif (in_array($column['expr_type'], ['index', 'unique-index'])) {
+            } elseif (in_array($column['expr_type'], [ExpressionType::INDEX, ExpressionType::UNIQUE_IDX])) {
                 $index = [
-                    'unique' => $column['expr_type'] === 'unique-index',
+                    'unique' => $column['expr_type'] === ExpressionType::UNIQUE_IDX,
                 ];
                 foreach ($column['sub_tree'] as $indexExpr) {
-                    if ($indexExpr['expr_type'] === 'const') {
+                    if ($indexExpr['expr_type'] === ExpressionType::CONSTANT) {
                         $index['name'] = $indexExpr['base_expr'];
-                    } elseif ($indexExpr['expr_type'] === 'column-list') {
+                    } elseif ($indexExpr['expr_type'] === ExpressionType::COLUMN_LIST) {
                         foreach ($indexExpr['sub_tree'] as $indexCol) {
                             //TODO length
-                            if ($indexCol['expr_type'] === 'index-column') {
+                            if ($indexCol['expr_type'] === ExpressionType::INDEX_COLUMN) {
                                 $index['columns'][] = [
                                     'name' => $indexCol['name'],
                                 ];
@@ -183,23 +184,23 @@ class CreateTablePlan implements PlanInterface
         $comment = null;
 
         foreach ($this->tableOptions as $tableOption) {
-            if ($tableOption['expr_type'] === 'character-set') {
+            if ($tableOption['expr_type'] === ExpressionType::CHARSET) {
                 foreach ($tableOption['sub_tree'] as $charSetExpr) {
-                    if ($charSetExpr['expr_type'] === 'const') {
+                    if ($charSetExpr['expr_type'] === ExpressionType::CONSTANT) {
                         $characterSet = $charSetExpr['base_expr'];
                     }
                 }
-            } elseif ($tableOption['expr_type'] === 'expression') {
+            } elseif ($tableOption['expr_type'] === ExpressionType::EXPRESSION) {
                 $optionType = null;
                 $optionValue = null;
                 foreach ($tableOption['sub_tree'] as $expr) {
-                    if ($expr['expr_type'] === 'reserved') {
+                    if ($expr['expr_type'] === ExpressionType::RESERVED) {
                         if ($expr['base_expr'] === 'engine') {
                             $optionType = 'engine';
                         } elseif ($expr['base_expr'] === 'comment') {
                             $optionType = 'comment';
                         }
-                    } elseif ($expr['expr_type'] === 'const') {
+                    } elseif ($expr['expr_type'] === ExpressionType::CONSTANT) {
                         $optionValue = $expr['base_expr'];
                     }
                 }
@@ -214,31 +215,31 @@ class CreateTablePlan implements PlanInterface
         $partitionMeta = [];
 
         foreach ($this->partitionOptions as $partitionOption) {
-            if ($partitionOption['expr_type'] === 'partition') {
+            if ($partitionOption['expr_type'] === ExpressionType::PARTITION) {
                 $partitionMeta['type'] = strtolower($partitionOption['by']);
-            } elseif ($partitionOption['expr_type'] === 'partition-range') {
+            } elseif ($partitionOption['expr_type'] === ExpressionType::PARTITION_RANGE) {
                 foreach ($partitionOption['sub_tree'] as $rangeExpr) {
-                    if ($rangeExpr['expr_type'] === 'bracket_expression') {
+                    if ($rangeExpr['expr_type'] === ExpressionType::BRACKET_EXPRESSION) {
                         foreach ($rangeExpr['sub_tree'] as $column) {
                             $partitionMeta['column'] = $column['base_expr'];
                             break;
                         }
                     }
                 }
-            } elseif ($partitionOption['expr_type'] === 'bracket_expression') {
+            } elseif ($partitionOption['expr_type'] === ExpressionType::BRACKET_EXPRESSION) {
                 $prevRangeBound = '';
                 foreach ($partitionOption['sub_tree'] as $partition) {
-                    if ($partition['expr_type'] === 'partition-def') {
+                    if ($partition['expr_type'] === ExpressionType::PARTITION_DEF) {
                         $partitionPart = [];
                         foreach ($partition['sub_tree'] as $defExpr) {
-                            if ($defExpr['expr_type'] === 'reserved') {
+                            if ($defExpr['expr_type'] === ExpressionType::RESERVED) {
                                 if ($defExpr['base_expr'] === 'partition') {
                                     $partitionPart['name'] = $defExpr['name'];
                                 }
-                            } elseif ($defExpr['expr_type'] === 'partition-values') {
+                            } elseif ($defExpr['expr_type'] === ExpressionType::PARTITION_VALUES) {
                                 foreach ($defExpr['sub_tree'] as $partitionValue) {
                                     foreach ($partitionValue as $pValExpr) {
-                                        if ($pValExpr['expr_type'] === 'bracket_expression') {
+                                        if ($pValExpr['expr_type'] === ExpressionType::BRACKET_EXPRESSION) {
                                             $partitionPart['lower'] = $prevRangeBound;
                                             $upper = $prevRangeBound = Type::rawVal($pValExpr['base_expr']);
                                             $partitionPart['upper'] = $upper;
