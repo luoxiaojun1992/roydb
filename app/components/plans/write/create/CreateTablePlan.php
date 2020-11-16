@@ -161,14 +161,16 @@ class CreateTablePlan implements PlanInterface
                 }
 
                 $this->columnsMeta[] = $columnsMeta;
-            } elseif ($column['expr_type'] === 'index') {
-                $index = [];
+            } elseif (in_array($column['expr_type'], ['index', 'unique-index'])) {
+                $index = [
+                    'unique' => $column['expr_type'] === 'unique-index',
+                ];
                 foreach ($column['sub_tree'] as $indexExpr) {
                     if ($indexExpr['expr_type'] === 'const') {
                         $index['name'] = $indexExpr['base_expr'];
                     } elseif ($indexExpr['expr_type'] === 'column-list') {
                         foreach ($indexExpr['sub_tree'] as $indexCol) {
-                            //TODO length unique
+                            //TODO length
                             if ($indexCol['expr_type'] === 'index-column') {
                                 $index['columns'][] = [
                                     'name' => $indexCol['name'],
@@ -260,7 +262,6 @@ class CreateTablePlan implements PlanInterface
 
         $this->partitions[] = $partitionMeta;
 
-        //TODO index(name、columns、unique)
         $this->schemaMeta = [
             'engine' => $engine,
             'comment' => $comment,
