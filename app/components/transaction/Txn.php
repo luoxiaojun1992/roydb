@@ -10,6 +10,7 @@ use App\components\transaction\log\AbstractLog;
 use App\components\transaction\log\RedoLog;
 use App\components\transaction\log\UndoLog;
 use App\components\Tso;
+use SwFwLess\components\utils\Arr;
 
 class Txn
 {
@@ -432,7 +433,7 @@ class Txn
         $txnStatus = $this->getStatus();
         $txnTs = $this->getTs();
 
-        if (!in_array($txnStatus, [TxnConst::STATUS_ACTIVE, TxnConst::STATUS_COMMITTED], true)) {
+        if (!Arr::safeInArray($txnStatus, [TxnConst::STATUS_ACTIVE, TxnConst::STATUS_COMMITTED])) {
             throw new \Exception(
                 'Txn[' . ((string)$txnTs) . '] status[' . ((string)$txnStatus) .
                 '] not allowed for committing'
@@ -531,7 +532,7 @@ class Txn
         $txnStatus = $this->getStatus();
         $txnTs = $this->getTs();
 
-        if (!in_array($txnStatus, [TxnConst::STATUS_ACTIVE, TxnConst::STATUS_CANCELED], true)) {
+        if (!Arr::safeInArray($txnStatus, [TxnConst::STATUS_ACTIVE, TxnConst::STATUS_CANCELED])) {
             throw new \Exception(
                 'Txn[' . ((string)$txnTs) . '] status[' . ((string)$txnStatus) .
                 '] not allowed for rollback'

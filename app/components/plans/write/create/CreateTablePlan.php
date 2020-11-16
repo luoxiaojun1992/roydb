@@ -8,6 +8,7 @@ use App\components\plans\PlanInterface;
 use App\components\storage\AbstractStorage;
 use App\components\utils\datatype\Type;
 use PHPSQLParser\utils\ExpressionType;
+use SwFwLess\components\utils\Arr;
 
 class CreateTablePlan implements PlanInterface
 {
@@ -119,17 +120,17 @@ class CreateTablePlan implements PlanInterface
                     throw new \Exception('Missing column name');
                 }
 
-                if (!in_array($columnType, ['varchar', 'char', 'int', 'double', 'decimal'], true)) {
+                if (!Arr::safeInArray($columnType, ['varchar', 'char', 'int', 'double', 'decimal'])) {
                     throw new \Exception('Invalid column type');
                 }
 
-                if (in_array($columnType, Column::DATA_TYPES_WITH_LENGTH, true)) {
+                if (Arr::safeInArray($columnType, Column::DATA_TYPES_WITH_LENGTH)) {
                     if (is_null($columnLength)) {
                         throw new \Exception('Missing column length');
                     }
                 }
 
-                if (in_array($columnType, ['int', 'double', 'decimal'], true)) {
+                if (Arr::safeInArray($columnType, ['int', 'double', 'decimal'])) {
                     if (is_null($columnUnsigned)) {
                         throw new \Exception('Missing column sign');
                     }
@@ -155,7 +156,7 @@ class CreateTablePlan implements PlanInterface
                 }
 
                 $this->columnsMeta[] = $columnsMeta;
-            } elseif (in_array($column['expr_type'], [ExpressionType::INDEX, ExpressionType::UNIQUE_IDX], true)) {
+            } elseif (Arr::safeInArray($column['expr_type'], [ExpressionType::INDEX, ExpressionType::UNIQUE_IDX])) {
                 $index = [
                     'unique' => $column['expr_type'] === ExpressionType::UNIQUE_IDX,
                 ];

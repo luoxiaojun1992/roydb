@@ -11,6 +11,7 @@ use App\components\metric\Histogram;
 use App\components\transaction\Snapshot;
 use Co\Channel;
 use SwFwLess\components\swoole\Scheduler;
+use SwFwLess\components\utils\Arr;
 
 abstract class KvStorage extends AbstractStorage
 {
@@ -382,7 +383,7 @@ abstract class KvStorage extends AbstractStorage
             $conditionOperator = $condition->getOperator();
             $operands = $condition->getOperands();
 
-            if (in_array($conditionOperator, ['<', '<=', '=', '>', '>='], true)) {
+            if (Arr::safeInArray($conditionOperator, ['<', '<=', '=', '>', '>='])) {
                 $operandValue1 = $operands[0]->getValue();
                 $operandType1 = $operands[0]->getType();
                 if ($operandType1 === 'colref') {
@@ -581,7 +582,7 @@ abstract class KvStorage extends AbstractStorage
             $conditionOperator = $condition->getOperator();
             $operands = $condition->getOperands();
 
-            if (in_array($conditionOperator, ['<', '<=', '=', '>', '>='], true)) {
+            if (Arr::safeInArray($conditionOperator, ['<', '<=', '=', '>', '>='])) {
                 $operandValue1 = $operands[0]->getValue();
                 $operandType1 = $operands[0]->getType();
                 if ($operandType1 === 'colref') {
@@ -684,11 +685,11 @@ abstract class KvStorage extends AbstractStorage
             if ($operandSchema !== $schema) {
                 return false;
             }
-            if (!in_array($colName, $schemaColumns, true)) {
+            if (!Arr::safeInArray($colName, $schemaColumns)) {
                 throw new \Exception($colName . ' is not column of ' . $schema);
             }
         } else {
-            if (!in_array($colName, $schemaColumns, true)) {
+            if (!Arr::safeInArray($colName, $schemaColumns)) {
                 return false;
             }
         }
@@ -1190,7 +1191,7 @@ abstract class KvStorage extends AbstractStorage
                                     if (count($subIndexData) > 0) {
                                         $indexColumns = array_keys($subIndexData[0]);
                                         if (is_null($usedColumns) ||
-                                            in_array('*', $usedColumns, true) ||
+                                            Arr::safeInArray('*', $usedColumns) ||
                                             (count(array_diff($usedColumns, $indexColumns)) > 0)
                                         ) {
                                             $subIndexData = $this->fetchAllColumnsByIndexData($subIndexData, $schema);
@@ -1366,7 +1367,7 @@ abstract class KvStorage extends AbstractStorage
                             if (count($subIndexData) > 0) {
                                 $indexColumns = array_keys($subIndexData[0]);
                                 if (is_null($usedColumns) ||
-                                    in_array('*', $usedColumns, true) ||
+                                    Arr::safeInArray('*', $usedColumns) ||
                                     (count(array_diff($usedColumns, $indexColumns)) > 0)
                                 ) {
                                     $subIndexData = $this->fetchAllColumnsByIndexData($subIndexData, $schema);
@@ -1570,7 +1571,7 @@ abstract class KvStorage extends AbstractStorage
                                     if (count($subIndexData) > 0) {
                                         $indexColumns = array_keys($subIndexData[0]);
                                         if (is_null($usedColumns) ||
-                                            in_array('*', $usedColumns, true) ||
+                                            Arr::safeInArray('*', $usedColumns) ||
                                             (count(array_diff($usedColumns, $indexColumns)) > 0)
                                         ) {
                                             $subIndexData = $this->fetchAllColumnsByIndexData($subIndexData, $schema);
@@ -1738,7 +1739,7 @@ abstract class KvStorage extends AbstractStorage
                             if (count($subIndexData) > 0) {
                                 $indexColumns = array_keys($subIndexData[0]);
                                 if (is_null($usedColumns) ||
-                                    in_array('*', $usedColumns, true) ||
+                                    Arr::safeInArray('*', $usedColumns) ||
                                     (count(array_diff($usedColumns, $indexColumns)) > 0)
                                 ) {
                                     $subIndexData = $this->fetchAllColumnsByIndexData($subIndexData, $schema);
@@ -1825,7 +1826,7 @@ abstract class KvStorage extends AbstractStorage
         }
 
         $conditionOperator = $condition->getOperator();
-        if (in_array($conditionOperator, ['<', '<=', '=', '>', '>='], true)) {
+        if (Arr::safeInArray($conditionOperator, ['<', '<=', '=', '>', '>='])) {
             $result = $this->filterBasicCompareCondition(
                 $schema, $rootCondition, $condition, $limit, $indexSuggestions, $isNot, $usedColumns
             );
@@ -2125,7 +2126,7 @@ abstract class KvStorage extends AbstractStorage
 
         $idMap = [];
         foreach ($result as $i => $row) {
-            if (in_array($row['id'], $idMap, true)) {
+            if (Arr::safeInArray($row['id'], $idMap)) {
                 unset($result[$i]);
             } else {
                 $idMap[] = $row['id'];
@@ -2230,7 +2231,7 @@ abstract class KvStorage extends AbstractStorage
 
         $pIndex = $this->getKvClient();
         foreach ($rows as $row) {
-            if (in_array($row[$pk], $existedRowsPkList, true)) {
+            if (Arr::safeInArray($row[$pk], $existedRowsPkList)) {
                 continue;
             }
 
@@ -2288,7 +2289,7 @@ abstract class KvStorage extends AbstractStorage
                 } else {
                     $indexRows = json_decode($indexData, true);
 
-                    if (in_array($row[$pk], array_column($indexRows, $pk), true)) {
+                    if (Arr::safeInArray($row[$pk], array_column($indexRows, $pk))) {
                         return false;
                     }
 

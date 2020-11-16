@@ -2,6 +2,8 @@
 
 namespace App\components\elements;
 
+use SwFwLess\components\utils\Arr;
+
 class Column
 {
     const DATA_TYPE_VARCHAR = 'varchar';
@@ -82,7 +84,7 @@ class Column
 
     public function isUdf()
     {
-        return in_array($this->getType(), ['aggregate_function', 'function'], true);
+        return Arr::safeInArray($this->getType(), ['aggregate_function', 'function']);
     }
 
     public function isColref()

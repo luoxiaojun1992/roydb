@@ -2,6 +2,8 @@
 
 namespace App\components\utils\datatype;
 
+use SwFwLess\components\utils\Arr;
+
 class Type
 {
     const TYPE_STR = 'string';
@@ -118,7 +120,7 @@ class Type
         $isBool = false;
 
         if (is_string($val)) {
-            if (in_array(strtolower($val), ['true', 'false'], true)) {
+            if (Arr::safeInArray(strtolower($val), ['true', 'false'])) {
                 $isBool = true;
             }
         }
@@ -135,7 +137,7 @@ class Type
         $isNull = false;
 
         if (is_string($val)) {
-            if (in_array(strtolower($val), ['null'], true)) {
+            if (Arr::safeInArray(strtolower($val), ['null'])) {
                 $isNull = true;
             }
         }
