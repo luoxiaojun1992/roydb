@@ -138,13 +138,6 @@ class CreateTablePlan implements PlanInterface
                     $pk = $columnName;
                 }
 
-//            [
-//                'name' => 'id',
-//                'type' => 'int',
-//                'length' => 11,
-//                'default' => null,
-//                'allow_null' => false,
-//            ]
                 $columnsMeta = [
                     'name' => $columnName,
                     'type' => $columnType,
