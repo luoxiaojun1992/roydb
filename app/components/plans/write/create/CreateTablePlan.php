@@ -165,11 +165,14 @@ class CreateTablePlan implements PlanInterface
                         $index['name'] = $indexExpr['base_expr'];
                     } elseif ($indexExpr['expr_type'] === ExpressionType::COLUMN_LIST) {
                         foreach ($indexExpr['sub_tree'] as $indexCol) {
-                            //TODO length
                             if ($indexCol['expr_type'] === ExpressionType::INDEX_COLUMN) {
-                                $index['columns'][] = [
+                                $indexColumnMeta = [
                                     'name' => $indexCol['name'],
                                 ];
+                                if ($indexCol['length'] !== false) {
+                                    $indexColumnMeta['length'] = $indexCol['length'];
+                                }
+                                $index['columns'][] = $indexColumnMeta;
                             }
                         }
                     }
