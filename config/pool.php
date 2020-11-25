@@ -7,7 +7,7 @@ return [
             'pool_size' => envInt('ROUTER_POOL_SIZE', 5),
         ],
         \SwFwLess\components\http\Request::class => [
-            'pool_size' => 5,
+            'pool_size' => envInt('HTTP_REQUEST_POOL_SIZE', 5),
         ],
         \App\services\WriteService::class => [
             'pool_size' => 5,
