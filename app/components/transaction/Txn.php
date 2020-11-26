@@ -208,7 +208,9 @@ class Txn
      */
     public function addLockKeys(array $lockKeys): self
     {
-        $this->lockKeys = array_merge($this->lockKeys, $lockKeys);
+        foreach ($lockKeys as $lockKey) {
+            $this->lockKeys[$lockKey] = true;
+        }
         return $this;
     }
 
@@ -218,7 +220,9 @@ class Txn
      */
     public function removeLockKeys(array $lockKeys): self
     {
-        $this->lockKeys = array_diff($this->lockKeys, $lockKeys);
+        foreach ($lockKeys as $lockKey) {
+            unset($this->lockKeys[$lockKey]);
+        }
         return $this;
     }
 
@@ -452,7 +456,7 @@ class Txn
 
         if ($continue) {
             $lockKeys = $this->getLockKeys();
-            foreach ($lockKeys as $lockKey) {
+            foreach ($lockKeys as $lockKey => $keyStatus) {
                 if (!Lock::txnUnLock($this, $lockKey)) {
                     $continue = false;
                 }
@@ -555,7 +559,7 @@ class Txn
 
         if ($continue) {
             $lockKeys = $this->getLockKeys();
-            foreach ($lockKeys as $lockKey) {
+            foreach ($lockKeys as $lockKey => $lockStatus) {
                 if (!Lock::txnUnLock($this, $lockKey)) {
                     $continue = false;
                 }

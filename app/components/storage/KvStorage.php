@@ -2124,16 +2124,7 @@ abstract class KvStorage extends AbstractStorage
             }
         }
 
-        $idMap = [];
-        foreach ($result as $i => $row) {
-            if (Arr::safeInArray($row['id'], $idMap)) {
-                unset($result[$i]);
-            } else {
-                $idMap[] = $row['id'];
-            }
-        }
-
-        return array_values($result);
+        return Arr::arrayColumnUnique($result, $this->getPrimaryKeyBySchema($schema), false);
     }
 
     /**
