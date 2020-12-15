@@ -794,6 +794,8 @@ abstract class KvStorage extends AbstractStorage
      */
     public function get($schema, $condition, $limit, $indexSuggestions, $usedColumns)
     {
+        //todo 参数改用属性设置，避免方法间传递
+        //todo callback接收数据，分批返回数据
         $condition = $this->filterConditionWithSchema($schema, $condition);
         $indexData = $this->conditionFilter(
             $schema,
