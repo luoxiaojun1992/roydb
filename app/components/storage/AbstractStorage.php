@@ -6,6 +6,9 @@ use App\components\transaction\Snapshot;
 
 abstract class AbstractStorage
 {
+    //TODO builder、factory
+    protected $storageEngine;
+
     abstract public function get($schema, $condition, $limit, $indexSuggestions, $usedColumns);
 
     abstract public function getSchemaMetaData($schema);
